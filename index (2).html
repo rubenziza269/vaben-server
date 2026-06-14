@@ -1,0 +1,2129 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Vaben — Marketplace</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://js.stripe.com/v3/"></script>
+<style>
+:root{
+  --c:#E53E3E;--y:#F6BD00;--g:#00B37D;--v:#6B21A8;--b:#0EA5E9;
+  --ink:#0D0D14;--paper:#F7F7F3;--mid:#6B6B7A;
+  --bd:rgba(0,0,0,.09);--sh:0 3px 20px rgba(0,0,0,.07);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);overflow-x:hidden;}
+img{max-width:100%;display:block;}
+
+/* SCROLL */
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:99px;}
+
+/* ═══ SPLASH ═══ */
+#splash{position:fixed;inset:0;z-index:9500;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;}
+#sI{display:flex;flex-direction:column;align-items:center;gap:1.8rem;animation:up .7s ease both;}
+.sLogo{font-family:'Syne',sans-serif;font-weight:800;font-size:4rem;letter-spacing:-3px;background:linear-gradient(135deg,var(--c),var(--y),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:pulse 2.5s ease-in-out infinite;}
+@keyframes pulse{0%,100%{filter:brightness(1);}50%{filter:brightness(1.4);}}
+.sTag{color:rgba(255,255,255,.42);font-size:.95rem;text-align:center;max-width:300px;line-height:1.65;}
+.sDots{display:flex;gap:.55rem;}
+.sd{width:8px;height:8px;border-radius:50%;animation:db 1.2s ease-in-out infinite;}
+.sd1{background:var(--c);}
+.sd2{background:var(--y);animation-delay:.2s;}
+.sd3{background:var(--g);animation-delay:.4s;}
+@keyframes db{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+.sBtn{padding:.82rem 2.6rem;border-radius:999px;border:none;cursor:pointer;background:linear-gradient(135deg,var(--c),var(--v));color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:.97rem;transition:transform .18s,box-shadow .18s;}
+.sBtn:hover{transform:scale(1.05);box-shadow:0 10px 28px rgba(229,62,62,.38);}
+#sL{display:none;flex-direction:column;align-items:center;gap:1.6rem;animation:up .45s ease both;width:100%;max-width:460px;}
+.sLT{font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem;color:#fff;text-align:center;}
+.lgrid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;width:100%;}
+.lb{padding:1rem .9rem;border-radius:14px;border:2px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:.38rem;transition:all .2s;}
+.lb:hover,.lb.sel{background:rgba(255,255,255,.1);border-color:var(--c);transform:translateY(-2px);}
+.lf{font-size:1.7rem;}.ln{font-size:.88rem;font-weight:500;}.lnt{font-size:.68rem;color:rgba(255,255,255,.32);}
+@keyframes up{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+/* ═══ AUTH ═══ */
+#authWall{position:fixed;inset:0;z-index:8000;background:linear-gradient(160deg,#0a0a10,#18082a,#0a0a10);display:none;align-items:center;justify-content:center;padding:1rem;}
+.ab{position:absolute;border-radius:50%;filter:blur(100px);opacity:.14;animation:bf 9s ease-in-out infinite;}
+.ab1{width:400px;height:400px;background:var(--v);top:-100px;right:-80px;}
+.ab2{width:340px;height:340px;background:var(--c);bottom:-60px;left:-60px;animation-delay:-4s;}
+.ab3{width:240px;height:240px;background:var(--g);top:45%;left:35%;animation-delay:-7s;}
+@keyframes bf{0%,100%{transform:translate(0,0);}50%{transform:translate(18px,-18px);}}
+.ac{position:relative;z-index:2;width:100%;max-width:400px;background:rgba(255,255,255,.055);backdrop-filter:blur(20px);border:1.5px solid rgba(255,255,255,.08);border-radius:24px;padding:2.6rem 2.2rem;animation:up .55s ease both;}
+.aNotice{text-align:center;margin-bottom:1.2rem;padding:.7rem 1rem;background:rgba(229,62,62,.1);border:1px solid rgba(229,62,62,.22);border-radius:10px;}
+.aNotice p{color:rgba(255,255,255,.48);font-size:.76rem;line-height:1.5;}
+.aNotice strong{color:var(--c);}
+.aLogo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem;letter-spacing:-1px;background:linear-gradient(135deg,var(--c),var(--y));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;margin-bottom:.35rem;}
+.aTitle{font-family:'Syne',sans-serif;font-weight:700;font-size:1.35rem;color:#fff;text-align:center;}
+.aSub{color:rgba(255,255,255,.36);font-size:.82rem;text-align:center;margin:.3rem 0 1.6rem;line-height:1.5;}
+.gBtn{width:100%;padding:.8rem;border-radius:12px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;font-size:.9rem;display:flex;align-items:center;justify-content:center;gap:.75rem;transition:all .2s;margin-bottom:.7rem;}
+.gBtn:hover{background:rgba(255,255,255,.11);transform:translateY(-1px);}
+.orDiv{display:flex;align-items:center;gap:.9rem;margin:1.1rem 0;}
+.orDiv::before,.orDiv::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08);}
+.orDiv span{color:rgba(255,255,255,.2);font-size:.72rem;}
+.aInp{width:100%;padding:.78rem 1rem;border-radius:10px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#fff;font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;transition:border-color .18s;margin-bottom:.65rem;display:block;}
+.aInp::placeholder{color:rgba(255,255,255,.2);}
+.aInp:focus{border-color:var(--v);}
+.aErr{color:var(--c);font-size:.75rem;min-height:1.1rem;margin-bottom:.3rem;}
+.aSub2{width:100%;padding:.84rem;border-radius:12px;border:none;cursor:pointer;background:linear-gradient(135deg,var(--v),var(--c));color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;transition:transform .18s;}
+.aSub2:hover{transform:translateY(-2px);}
+.aToggle{color:rgba(255,255,255,.3);font-size:.77rem;text-align:center;margin-top:1rem;}
+.aToggle a{color:var(--y);font-weight:600;cursor:pointer;}
+.aSkip{display:block;text-align:center;margin-top:.85rem;color:rgba(255,255,255,.22);font-size:.73rem;cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
+
+/* ═══ NAV ═══ */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 2.4rem;background:rgba(247,247,243,.93);backdrop-filter:blur(14px);border-bottom:1px solid var(--bd);}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.45rem;letter-spacing:-1px;background:linear-gradient(135deg,var(--c),var(--v));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.navL{display:flex;gap:1.8rem;list-style:none;}
+.navL a{font-size:.88rem;font-weight:500;color:var(--ink);text-decoration:none;position:relative;padding-bottom:3px;}
+.navL a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--c);transition:width .2s;}
+.navL a:hover::after{width:100%;}
+.navR{display:flex;align-items:center;gap:.65rem;position:relative;}
+.nb{padding:.4rem 1.1rem;border-radius:999px;font-family:'DM Sans',sans-serif;font-weight:500;font-size:.82rem;cursor:pointer;border:none;transition:transform .15s;}
+.nb:hover{transform:translateY(-1px);}
+.nbR{background:var(--c);color:#fff;}
+.nbO{background:transparent;border:1.5px solid var(--ink);color:var(--ink);}
+.ib{background:transparent;border:1px solid var(--bd);width:36px;height:36px;border-radius:50%;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;}
+.ib:hover{background:var(--ink);color:#fff;}
+/* CART BUTTON */
+.cartBtn{position:relative;background:var(--ink);color:#fff;border:none;width:36px;height:36px;border-radius:50%;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .18s;}
+.cartBtn:hover{transform:scale(1.08);}
+.cartN{position:absolute;top:-4px;right:-4px;background:var(--c);color:#fff;width:16px;height:16px;border-radius:50%;font-size:.58rem;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--paper);}
+/* USER PILL */
+.uPill{display:flex;align-items:center;gap:.5rem;padding:.3rem .7rem .3rem .3rem;border-radius:999px;background:var(--paper);border:1.5px solid var(--bd);cursor:pointer;transition:all .18s;}
+.uPill:hover{border-color:var(--v);}
+.uAv{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--c),var(--v));display:flex;align-items:center;justify-content:center;color:#fff;font-size:.75rem;font-weight:700;overflow:hidden;flex-shrink:0;}
+.uAv img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.uNm{font-size:.82rem;font-weight:600;max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.uDrop{position:absolute;top:calc(100% + .5rem);right:0;background:#fff;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.14);border:1px solid var(--bd);min-width:180px;overflow:hidden;z-index:200;display:none;animation:up .2s ease both;}
+.uDrop.open{display:block;}
+.uDi{padding:.75rem 1.1rem;font-size:.86rem;cursor:pointer;transition:background .15s;display:flex;align-items:center;gap:.6rem;}
+.uDi:hover{background:#f5f0ff;}
+.uDi.red{color:var(--c);}
+.uDi.red:hover{background:#fff5f5;}
+.uSep{height:1px;background:var(--bd);}
+
+/* ═══ HERO ═══ */
+.hero{min-height:100vh;padding:115px 2.4rem 65px;display:grid;grid-template-columns:1fr 1fr;gap:3.5rem;align-items:center;position:relative;overflow:hidden;}
+.hb{position:absolute;border-radius:50%;filter:blur(88px);opacity:.27;animation:hbf 8s ease-in-out infinite;}
+.hb1{width:460px;height:460px;background:var(--c);top:-80px;right:-80px;}
+.hb2{width:370px;height:370px;background:var(--y);bottom:-60px;left:0;animation-delay:-3s;}
+.hb3{width:270px;height:270px;background:var(--v);top:38%;right:28%;animation-delay:-5s;}
+@keyframes hbf{0%,100%{transform:translate(0,0);}50%{transform:translate(22px,-22px);}}
+.hText{position:relative;z-index:2;}
+.hBadge{display:inline-flex;align-items:center;gap:.42rem;background:var(--y);color:var(--ink);padding:.28rem .85rem;border-radius:999px;font-size:.73rem;font-weight:600;margin-bottom:1.3rem;}
+.hBdot{width:6px;height:6px;border-radius:50%;background:var(--c);}
+h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(2.5rem,4.5vw,4rem);line-height:1.06;letter-spacing:-2px;}
+h1 em{font-style:normal;color:var(--c);}
+.hSub{margin-top:1.2rem;color:var(--mid);font-size:.97rem;line-height:1.7;max-width:400px;}
+.hCtas{margin-top:1.9rem;display:flex;gap:.85rem;flex-wrap:wrap;}
+.hStats{margin-top:3rem;display:flex;gap:2rem;}
+.sNum{font-family:'Syne',sans-serif;font-size:1.75rem;font-weight:800;background:linear-gradient(135deg,var(--v),var(--b));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sLbl{font-size:.73rem;color:var(--mid);margin-top:.08rem;}
+.btn{padding:.6rem 1.6rem;border-radius:999px;font-family:'DM Sans',sans-serif;font-weight:500;font-size:.9rem;cursor:pointer;border:none;transition:transform .16s,box-shadow .16s;}
+.btn:hover{transform:translateY(-2px);box-shadow:0 7px 20px rgba(0,0,0,.11);}
+.bC{background:var(--c);color:#fff;}.bO{background:transparent;border:1.5px solid var(--ink);color:var(--ink);}
+.bV{background:var(--v);color:#fff;}.bW{background:#fff;color:var(--v);font-weight:700;}
+
+/* HERO VISUAL */
+.hVis{position:relative;z-index:2;padding:18px 26px;}
+.cGrid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;}
+.mc{border-radius:16px;padding:1.2rem;display:flex;flex-direction:column;gap:.6rem;box-shadow:0 7px 28px rgba(0,0,0,.08);transition:transform .2s;cursor:pointer;}
+.mc:hover{transform:translateY(-5px) rotate(-1deg);}
+.mc1{background:linear-gradient(135deg,#fff5f5,#ffe0e0);}
+.mc2{background:linear-gradient(135deg,#f0fff8,#ccfce9);}
+.mc3{background:linear-gradient(135deg,#f5f0ff,#e8d8ff);grid-column:span 2;flex-direction:row;align-items:center;gap:1rem;}
+.mcE{font-size:2rem;width:50px;height:50px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.06);border-radius:10px;flex-shrink:0;}
+.mcT{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;}
+.mcP{font-weight:600;font-size:1rem;color:var(--c);}
+.mcB{display:inline-block;padding:.16rem .5rem;border-radius:999px;font-size:.65rem;font-weight:600;background:var(--g);color:#fff;}
+.fpil{position:absolute;background:#fff;padding:.42rem .9rem;border-radius:999px;box-shadow:0 5px 20px rgba(0,0,0,.1);font-size:.74rem;font-weight:600;display:flex;align-items:center;gap:.3rem;animation:fpf 4s ease-in-out infinite;white-space:nowrap;}
+.fp1{top:-16px;right:8px;animation-delay:-1s;}
+.fp2{bottom:-6px;left:-16px;animation-delay:-2.5s;}
+@keyframes fpf{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+
+/* SECTIONS */
+section{padding:80px 2.4rem;}
+.sLabel{font-size:.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--c);margin-bottom:.6rem;}
+.sTitle{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.8rem,3vw,2.6rem);letter-spacing:-.8px;line-height:1.1;}
+.sTitle span{color:var(--v);}
+
+/* CATEGORIES */
+.catSec{background:var(--ink);color:#fff;}
+.catSec .sLabel{color:var(--y);}
+.catSec .sTitle{color:#fff;}
+.catSec .sTitle span{color:var(--g);}
+.catGrid{margin-top:2.5rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:1rem;}
+.ci{border-radius:14px;padding:1.5rem 1rem;display:flex;flex-direction:column;gap:.65rem;cursor:pointer;transition:transform .18s;position:relative;overflow:hidden;background:#181824;}
+.ci::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s;}
+.ci:hover{transform:translateY(-4px);}
+.ci:hover::before{opacity:1;}
+.cc1::before{background:linear-gradient(135deg,rgba(229,62,62,.15),transparent);}
+.cc2::before{background:linear-gradient(135deg,rgba(246,189,0,.15),transparent);}
+.cc3::before{background:linear-gradient(135deg,rgba(0,179,125,.15),transparent);}
+.cc4::before{background:linear-gradient(135deg,rgba(107,33,168,.15),transparent);}
+.cc5::before{background:linear-gradient(135deg,rgba(14,165,233,.15),transparent);}
+.cc6::before{background:linear-gradient(135deg,rgba(255,77,130,.15),transparent);}
+.ciIc{font-size:1.9rem;}
+.ciNm{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;color:#fff;}
+.ciCt{font-size:.7rem;color:#7777aa;}
+
+/* PRODUCTS GRID */
+.ph{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2.1rem;gap:1rem;flex-wrap:wrap;}
+.chips{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.85rem;}
+.chip{padding:.32rem .85rem;border-radius:999px;font-size:.78rem;font-weight:500;cursor:pointer;border:1.5px solid var(--bd);background:transparent;transition:all .15s;}
+.chip.a,.chip:hover{background:var(--ink);color:#fff;border-color:var(--ink);}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.3rem;}
+.pcard{border-radius:18px;overflow:hidden;background:#fff;box-shadow:var(--sh);transition:transform .2s,box-shadow .2s;cursor:pointer;position:relative;display:flex;flex-direction:column;}
+.pcard:hover{transform:translateY(-6px);box-shadow:0 14px 40px rgba(0,0,0,.11);}
+.pImg{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:3.2rem;position:relative;overflow:hidden;flex-shrink:0;background:#f5f5f0;}
+.pImg img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+.pImg .pEm{position:relative;z-index:1;}
+.pi1{background:linear-gradient(135deg,#ffe0e0,#ffc8c8);}
+.pi2{background:linear-gradient(135deg,#e0f5ff,#c8e8ff);}
+.pi3{background:linear-gradient(135deg,#f0ffe0,#d8f5c8);}
+.pi4{background:linear-gradient(135deg,#f0e0ff,#ddc8ff);}
+.pi5{background:linear-gradient(135deg,#fff5e0,#ffe8c8);}
+.pi6{background:linear-gradient(135deg,#e0fffa,#c8fff4);}
+.pFav{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;background:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;box-shadow:0 3px 10px rgba(0,0,0,.09);transition:transform .15s;z-index:2;}
+.pFav:hover{transform:scale(1.18);}
+.pFav.liked{background:var(--c);}
+.pTag{position:absolute;bottom:10px;left:10px;background:rgba(12,12,17,.7);color:#fff;padding:.18rem .55rem;border-radius:999px;font-size:.65rem;font-weight:600;backdrop-filter:blur(4px);z-index:2;}
+.pBody{padding:.95rem 1.1rem 1.2rem;display:flex;flex-direction:column;gap:.3rem;flex:1;}
+.pSeller{font-size:.7rem;color:var(--mid);}
+.pName{font-family:'Syne',sans-serif;font-weight:700;font-size:.92rem;}
+.pDesc{font-size:.75rem;color:var(--mid);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.pFoot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:.6rem;}
+.pPrice{font-weight:700;font-size:1.15rem;color:var(--ink);}
+.pRat{font-size:.7rem;color:var(--mid);}
+.pBtns{display:flex;gap:.4rem;}
+.pAdd{width:32px;height:32px;border-radius:50%;background:var(--ink);color:#fff;border:none;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s,background .15s;}
+.pAdd:hover{background:var(--c);transform:scale(1.1) rotate(90deg);}
+.pBuy{padding:.32rem .85rem;border-radius:999px;background:var(--g);color:#fff;border:none;font-size:.75rem;font-weight:600;cursor:pointer;transition:transform .15s;}
+.pBuy:hover{transform:scale(1.05);}
+/* LOCK OVERLAY */
+.lockOv{position:absolute;inset:0;background:rgba(12,12,17,.72);backdrop-filter:blur(5px);border-radius:18px;display:none;flex-direction:column;align-items:center;justify-content:center;gap:.65rem;z-index:10;}
+.loIc{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:1.2rem;}
+.loTxt{color:#fff;font-size:.8rem;text-align:center;padding:0 1rem;line-height:1.5;}
+.loBtn{padding:.42rem 1.1rem;border-radius:999px;background:var(--c);color:#fff;border:none;font-size:.78rem;font-weight:600;cursor:pointer;}
+
+/* EMPTY STATE */
+.emptyState{grid-column:1/-1;text-align:center;padding:3rem 1rem;color:var(--mid);}
+.emptyState p{font-size:.95rem;margin-top:.5rem;}
+
+/* BANNER */
+.bnrWrap{padding:0 2.4rem;}
+.bnr{background:linear-gradient(135deg,var(--v),var(--c));border-radius:24px;padding:3rem 2.6rem;display:flex;align-items:center;justify-content:space-between;gap:2rem;flex-wrap:wrap;}
+.bnr h2{font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;color:#fff;letter-spacing:-.8px;}
+.bnr p{color:rgba(255,255,255,.72);margin-top:.45rem;font-size:.92rem;}
+
+/* SELLERS */
+.sellSec{background:#f4f2ff;}
+.sellGrid{margin-top:2.2rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:1rem;}
+.sc{background:#fff;border-radius:16px;padding:1.6rem 1.2rem;text-align:center;transition:transform .2s,box-shadow .2s;cursor:pointer;}
+.sc:hover{transform:translateY(-4px);box-shadow:0 10px 26px rgba(107,33,168,.1);}
+.scAv{width:64px;height:64px;border-radius:50%;margin:0 auto .8rem;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-family:'Syne',sans-serif;font-weight:800;color:#fff;}
+.sa1{background:linear-gradient(135deg,var(--c),var(--y));}
+.sa2{background:linear-gradient(135deg,var(--v),var(--b));}
+.sa3{background:linear-gradient(135deg,var(--g),var(--b));}
+.sa4{background:linear-gradient(135deg,var(--y),var(--c));}
+.scNm{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;}
+.scSp{font-size:.73rem;color:var(--mid);margin-top:.2rem;}
+.scStats{display:flex;justify-content:center;gap:1rem;margin-top:.85rem;}
+.sst{font-size:.7rem;}
+.sst strong{display:block;font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;}
+.vBdg{display:inline-flex;align-items:center;background:var(--g);color:#fff;padding:.18rem .6rem;border-radius:999px;font-size:.65rem;font-weight:600;margin-top:.6rem;}
+.chatSelBtn{margin-top:.7rem;padding:.38rem 1rem;border-radius:999px;background:var(--v);color:#fff;border:none;font-size:.75rem;font-weight:600;cursor:pointer;transition:transform .15s;}
+.chatSelBtn:hover{transform:scale(1.05);}
+
+/* ═══ CART SIDEBAR ═══ */
+#cartSidebar{position:fixed;top:0;right:0;bottom:0;width:380px;z-index:7000;background:#fff;box-shadow:-20px 0 60px rgba(0,0,0,.14);transform:translateX(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;}
+#cartSidebar.open{transform:translateX(0);}
+.cartOv{position:fixed;inset:0;z-index:6999;background:rgba(0,0,0,.28);opacity:0;pointer-events:none;transition:opacity .28s;}
+.cartOv.open{opacity:1;pointer-events:all;}
+.cartHdr{padding:1.5rem 1.4rem;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;}
+.cartHdr h3{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;}
+.cartClose{background:transparent;border:none;font-size:1.3rem;cursor:pointer;color:var(--mid);}
+.cartClose:hover{color:var(--c);}
+.cartItems{flex:1;overflow-y:auto;padding:1.2rem;}
+.cartEmpty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--mid);gap:.6rem;font-size:.9rem;}
+.cartItem{display:flex;gap:.85rem;padding:.9rem;background:#fafafa;border-radius:12px;margin-bottom:.8rem;position:relative;}
+.ciImg{width:56px;height:56px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0;overflow:hidden;}
+.ciImg img{width:100%;height:100%;object-fit:cover;}
+.ciInfo{flex:1;}
+.ciNm{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;}
+.ciSell{font-size:.7rem;color:var(--mid);margin-bottom:.2rem;}
+.ciPrice{color:var(--c);font-weight:700;font-size:1rem;}
+.ciQty{display:flex;align-items:center;gap:.5rem;margin-top:.4rem;}
+.ciQB{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--bd);background:transparent;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.ciQB:hover{background:var(--ink);color:#fff;border-color:var(--ink);}
+.ciQV{font-weight:700;min-width:20px;text-align:center;font-size:.85rem;}
+.ciDel{position:absolute;top:.7rem;right:.7rem;background:transparent;border:none;color:var(--mid);cursor:pointer;font-size:.9rem;transition:color .15s;}
+.ciDel:hover{color:var(--c);}
+.cartFoot{padding:1.2rem 1.4rem;border-top:1px solid var(--bd);}
+.cartTot{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;}
+.cartTotLbl{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;}
+.cartTotP{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:var(--v);}
+.checkoutBtn{width:100%;padding:.88rem;border-radius:13px;border:none;cursor:pointer;background:linear-gradient(135deg,var(--v),var(--c));color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;transition:transform .18s;}
+.checkoutBtn:hover{transform:translateY(-2px);}
+
+/* ═══ CHECKOUT MODAL ═══ */
+#checkoutModal{position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,.52);display:none;align-items:center;justify-content:center;padding:1rem;overflow-y:auto;}
+#checkoutModal.open{display:flex;}
+.ckCard{background:#fff;border-radius:22px;width:100%;max-width:500px;margin:auto;box-shadow:0 22px 65px rgba(0,0,0,.17);animation:up .35s ease both;overflow:hidden;}
+.ckHdr{background:linear-gradient(135deg,var(--v),var(--c));padding:1.6rem 1.8rem;display:flex;align-items:center;justify-content:space-between;}
+.ckHdr h3{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:#fff;}
+.ckClose{background:rgba(255,255,255,.18);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
+.ckClose:hover{background:rgba(255,255,255,.3);}
+.ckBody{padding:1.6rem 1.8rem;}
+.ckForm{display:flex;flex-direction:column;gap:.8rem;}
+.ckInp{width:100%;padding:.74rem .95rem;border-radius:10px;border:1.5px solid var(--bd);font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;transition:border-color .18s;}
+.ckInp:focus{border-color:var(--v);}
+.ckSection{font-family:'Syne',sans-serif;font-weight:700;font-size:.78rem;letter-spacing:1px;text-transform:uppercase;color:var(--mid);margin-top:.4rem;}
+.ckSummary{background:#fafafa;border-radius:12px;padding:1rem;margin-top:.4rem;}
+.ckSumItem{display:flex;justify-content:space-between;align-items:center;font-size:.85rem;padding:.3rem 0;border-bottom:1px solid var(--bd);}
+.ckSumItem:last-child{border-bottom:none;font-weight:700;font-size:.95rem;padding-top:.5rem;}
+.ckTot{display:flex;align-items:center;justify-content:space-between;padding:1rem 0;border-top:1px solid var(--bd);margin-top:.4rem;}
+.ckTotLbl{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;}
+.ckTotP{color:var(--v);font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;}
+.ckSubmit{width:100%;padding:.86rem;border-radius:13px;border:none;cursor:pointer;background:linear-gradient(135deg,var(--v),var(--c));color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;transition:transform .18s;margin-top:.5rem;}
+.ckSubmit:hover{transform:translateY(-2px);}
+.ckConfirm{display:none;text-align:center;padding:.5rem 0 1rem;}
+.ckConfIc{width:60px;height:60px;border-radius:50%;background:#f0fdf4;border:2px solid var(--g);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 1rem;}
+.ckConfIc::after{content:'✓';}
+.ckConfirm h4{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;margin-bottom:.5rem;}
+.ckConfirm p{color:var(--mid);font-size:.84rem;line-height:1.65;}
+.emailHl{color:var(--v);font-weight:600;}
+
+/* ═══ SELL MODAL ═══ */
+#sellModal{position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,.52);display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:2rem 1rem;}
+#sellModal.open{display:flex;}
+.smCard{background:#fff;border-radius:22px;width:100%;max-width:600px;margin:auto;box-shadow:0 22px 65px rgba(0,0,0,.17);animation:up .35s ease both;position:relative;}
+.smHdr{padding:1.8rem 2rem 1rem;border-bottom:1px solid var(--bd);text-align:center;}
+.smHdr h2{font-family:'Syne',sans-serif;font-weight:800;font-size:1.45rem;letter-spacing:-.4px;}
+.smHdr p{color:var(--mid);font-size:.82rem;margin-top:.28rem;}
+.smClose{position:absolute;top:1rem;right:1.3rem;background:transparent;border:none;font-size:1.25rem;cursor:pointer;color:var(--mid);}
+.smClose:hover{color:var(--c);}
+.smBody{padding:1.6rem 2rem 2rem;display:flex;flex-direction:column;gap:1.2rem;}
+.fg{display:flex;flex-direction:column;gap:.34rem;}
+.fg label{font-size:.8rem;font-weight:600;}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.fi,.fs,.ft{width:100%;padding:.7rem .9rem;border-radius:9px;border:1.5px solid var(--bd);font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;transition:border-color .18s;background:#fff;}
+.fi:focus,.fs:focus,.ft:focus{border-color:var(--v);}
+.ft{resize:vertical;min-height:80px;}
+.fs{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='6'%3E%3Cpath d='M1 1l4.5 4L10 1' stroke='%2371717A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .85rem center;cursor:pointer;}
+.pzn{border:2px dashed var(--bd);border-radius:11px;padding:1.2rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.45rem;cursor:pointer;transition:all .18s;background:#fafafa;}
+.pzn:hover{border-color:var(--v);background:#f5f0ff;}
+.pzIc{width:38px;height:38px;border-radius:9px;background:rgba(107,33,168,.08);display:flex;align-items:center;justify-content:center;}
+.pzTxt{font-size:.78rem;color:var(--mid);text-align:center;}
+.pzTxt strong{color:var(--v);}
+.pprev{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.45rem;}
+.pprev img{width:64px;height:64px;border-radius:8px;object-fit:cover;border:1.5px solid var(--bd);}
+.pw{position:relative;}
+.ps{position:absolute;left:.88rem;top:50%;transform:translateY(-50%);font-size:.88rem;color:var(--mid);font-weight:700;}
+.fi-p{padding-left:2.2rem !important;}
+.smSubmit{width:100%;padding:.86rem;border-radius:12px;border:none;cursor:pointer;background:linear-gradient(135deg,var(--g),var(--v));color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;transition:transform .18s;}
+.smSubmit:hover{transform:translateY(-2px);}
+
+/* ═══ CHAT ═══ */
+#chatPanel{position:fixed;bottom:1.7rem;right:1.7rem;z-index:5500;width:340px;background:#fff;border-radius:20px;box-shadow:0 16px 50px rgba(0,0,0,.16);transform:translateY(110%);opacity:0;transition:transform .3s cubic-bezier(.4,0,.2,1),opacity .25s;overflow:hidden;}
+#chatPanel.open{transform:translateY(0);opacity:1;}
+.cpHdr{background:linear-gradient(135deg,var(--v),var(--c));padding:1.1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;}
+.cpInfo{display:flex;align-items:center;gap:.7rem;}
+.cpAv{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:#fff;}
+.cpNm{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;color:#fff;}
+.cpSt{font-size:.68rem;color:rgba(255,255,255,.62);display:flex;align-items:center;gap:.25rem;margin-top:.1rem;}
+.cpDot{width:5px;height:5px;border-radius:50%;background:var(--g);}
+.cpCl{background:rgba(255,255,255,.15);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.cpCl:hover{background:rgba(255,255,255,.3);}
+.cpTabs{display:flex;border-bottom:1px solid var(--bd);}
+.cpTab{flex:1;padding:.6rem;text-align:center;font-size:.77rem;font-weight:600;cursor:pointer;color:var(--mid);transition:all .18s;border-bottom:2px solid transparent;}
+.cpTab.active{color:var(--v);border-bottom-color:var(--v);}
+#cpContacts{padding:.8rem;}
+.cItem{display:flex;align-items:center;gap:.7rem;padding:.6rem .5rem;border-radius:10px;cursor:pointer;transition:background .15s;}
+.cItem:hover{background:#f5f0ff;}
+.cIAv{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;color:#fff;flex-shrink:0;}
+.cINm{font-size:.84rem;font-weight:600;}
+.cILast{font-size:.72rem;color:var(--mid);}
+.noConv{padding:1.2rem;text-align:center;color:var(--mid);font-size:.8rem;line-height:1.5;}
+#cpConv{display:none;}
+#cpMsgs{height:220px;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.65rem;}
+.cm{max-width:80%;padding:.6rem .9rem;border-radius:13px;font-size:.82rem;line-height:1.48;animation:up .25s ease both;}
+.cmIn{background:#f0eeff;color:var(--ink);border-bottom-left-radius:3px;align-self:flex-start;}
+.cmOut{background:var(--v);color:#fff;border-bottom-right-radius:3px;align-self:flex-end;}
+.cmTime{font-size:.62rem;opacity:.5;margin-top:.18rem;text-align:right;}
+.cpInpR{display:flex;gap:.5rem;padding:.85rem;border-top:1px solid var(--bd);}
+.cpInp{flex:1;border:1.5px solid var(--bd);border-radius:999px;padding:.48rem .9rem;font-family:'DM Sans',sans-serif;font-size:.83rem;outline:none;transition:border-color .18s;}
+.cpInp:focus{border-color:var(--v);}
+.cpSend{background:var(--v);color:#fff;border:none;width:34px;height:34px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s,background .15s;flex-shrink:0;}
+.cpSend:hover{transform:scale(1.08);background:var(--c);}
+.chatFab{position:fixed;bottom:1.7rem;right:1.7rem;z-index:5499;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--v),var(--c));border:none;color:#fff;font-size:1.2rem;cursor:pointer;box-shadow:0 6px 22px rgba(107,33,168,.36);display:flex;align-items:center;justify-content:center;transition:transform .18s;}
+.chatFab:hover{transform:scale(1.1);}
+.chatFab.hid{display:none;}
+
+/* SETTINGS */
+#settPanel{position:fixed;top:0;right:0;bottom:0;width:320px;z-index:5000;background:#fff;box-shadow:-16px 0 48px rgba(0,0,0,.12);transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;}
+#settPanel.open{transform:translateX(0);}
+.settOv{position:fixed;inset:0;z-index:4999;background:rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .25s;}
+.settOv.open{opacity:1;pointer-events:all;}
+.spH{padding:1.6rem 1.3rem .85rem;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;}
+.spH h3{font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;}
+.spCl{background:transparent;border:none;font-size:1.25rem;cursor:pointer;color:var(--mid);}
+.spCl:hover{color:var(--c);}
+.spB{flex:1;overflow-y:auto;padding:1.3rem;}
+.spSec{margin-bottom:1.7rem;}
+.spSecT{font-family:'Syne',sans-serif;font-weight:700;font-size:.7rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--mid);margin-bottom:.85rem;}
+.spRow{display:flex;align-items:center;justify-content:space-between;padding:.8rem 0;border-bottom:1px solid rgba(0,0,0,.04);cursor:pointer;}
+.spRow:last-child{border-bottom:none;}
+.spRL{font-size:.9rem;font-weight:500;}
+.spRS{font-size:.72rem;color:var(--mid);margin-top:.1rem;}
+.lmr{display:flex;gap:.42rem;flex-wrap:wrap;margin-top:.8rem;}
+.lmb{padding:.35rem .82rem;border-radius:999px;border:1.5px solid var(--bd);background:transparent;font-size:.77rem;font-weight:500;cursor:pointer;transition:all .15s;}
+.lmb.a,.lmb:hover{background:var(--v);color:#fff;border-color:var(--v);}
+
+/* FAVORITES PAGE */
+#favsPage{display:none;padding:100px 2.4rem 80px;}
+.favsEmpty{text-align:center;padding:4rem 1rem;color:var(--mid);}
+
+/* FOOTER */
+footer{background:var(--ink);color:rgba(255,255,255,.5);padding:3.5rem 2.4rem 1.7rem;}
+.fgGrid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2.5rem;margin-bottom:2.5rem;}
+.fb .logo{font-size:1.6rem;display:block;margin-bottom:.75rem;}
+.fb p{font-size:.85rem;line-height:1.6;color:rgba(255,255,255,.38);}
+.fc h4{font-family:'Syne',sans-serif;font-weight:700;color:#fff;margin-bottom:.9rem;font-size:.88rem;}
+.fc ul{list-style:none;display:flex;flex-direction:column;gap:.5rem;}
+.fc a{color:rgba(255,255,255,.38);text-decoration:none;font-size:.84rem;transition:color .15s;cursor:pointer;}
+.fc a:hover{color:var(--y);}
+.eml{color:var(--y) !important;font-weight:600 !important;}
+.fBot{border-top:1px solid rgba(255,255,255,.07);padding-top:1.2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+.fBot p{font-size:.75rem;}
+.socials{display:flex;gap:.55rem;}
+.socialBtn{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.06);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;cursor:pointer;transition:background .15s;text-decoration:none;font-weight:700;}
+.socialBtn:hover{background:var(--c);}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.7rem;left:50%;transform:translateX(-50%) translateY(85px);z-index:9999;background:var(--ink);color:#fff;padding:.8rem 1.3rem;border-radius:11px;box-shadow:0 7px 28px rgba(0,0,0,.18);font-size:.85rem;font-weight:500;display:flex;align-items:center;gap:.55rem;opacity:0;transition:transform .26s,opacity .26s;white-space:nowrap;max-width:90vw;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.tDot{width:7px;height:7px;border-radius:50%;background:var(--g);flex-shrink:0;}
+
+/* REVEAL */
+.rev{opacity:0;transform:translateY(25px);transition:opacity .5s,transform .5s;}
+.rev.vis{opacity:1;transform:translateY(0);}
+
+@media(max-width:900px){.hero{grid-template-columns:1fr;padding-top:100px;}.hVis{display:none;}.fgGrid{grid-template-columns:1fr 1fr;}.navL{display:none;}#settPanel{width:100%;}#chatPanel{width:calc(100% - 2rem);right:1rem;bottom:1rem;}.r2{grid-template-columns:1fr;}#cartSidebar{width:100%;}}
+@media(max-width:560px){nav{padding:0 1rem;}section{padding:55px 1rem;}.hero{padding:90px 1rem 55px;}.bnrWrap{padding:0 1rem;}.bnr{padding:1.7rem 1.3rem;}.fgGrid{grid-template-columns:1fr;}}
+
+/* ═══ MOBILE TOUCH FIXES ═══ */
+@media(hover:none),(pointer:coarse){
+  /* Désactiver la sélection de texte sur les éléments cliquables */
+  button,.lb,.pcard,.ci,.mc,.sc,.chip,.pFav,.pAdd,.pBuy,.cartBtn,.ib,.nb,.uPill,.uDi,.aSkip,.loBtn,.socialBtn{
+    -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
+  }
+  /* Cacher le curseur custom sur mobile */
+  #cur{display:none!important;}
+  /* Boutons plus grands pour le touch */
+  .pAdd{width:40px;height:40px;font-size:1.3rem;}
+  .pBuy{padding:.45rem 1rem;font-size:.82rem;}
+  .pFav{width:38px;height:38px;}
+  .cartBtn{width:42px;height:42px;}
+  .ib{width:42px;height:42px;}
+  .chip{padding:.45rem 1rem;font-size:.82rem;}
+  .lb{padding:1.2rem 1rem;}
+  /* Nav mobile */
+  nav{height:56px;}
+  /* Barre de nav mobile en bas */
+  #mobileNav{display:flex;}
+  body{padding-bottom:60px;}
+  #app > footer{padding-bottom:80px;}
+  /* Panneaux plein écran sur mobile */
+  #cartSidebar{width:100%!important;border-radius:0;}
+  #settPanel{width:100%!important;border-radius:0;}
+  #chatPanel{width:100%!important;left:0!important;right:0!important;bottom:0!important;border-radius:0;}
+  /* Cards produits 2 colonnes sur mobile */
+  .pgrid{grid-template-columns:repeat(2,1fr);gap:.7rem;}
+  .pcard{border-radius:14px;}
+  .pImg{aspect-ratio:1;}
+  .pName{font-size:.82rem;}
+  .pPrice{font-size:1rem;}
+  .pBody{padding:.7rem .8rem .9rem;}
+  /* Auth card plein écran */
+  .ac{border-radius:14px;padding:1.8rem 1.4rem;}
+  /* Hover désactivés (cause bugs sur mobile) */
+  .pcard:hover{transform:none;box-shadow:var(--sh);}
+  .mc:hover{transform:none;}
+  .ci:hover{transform:none;}
+  .sc:hover{transform:none;box-shadow:none;}
+  .btn:hover{transform:none;box-shadow:none;}
+  .nb:hover{transform:none;}
+}
+
+/* Barre de navigation mobile en bas */
+#mobileNav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:500;
+  height:60px;background:rgba(247,247,243,.97);
+  backdrop-filter:blur(14px);
+  border-top:1px solid var(--bd);
+  align-items:center;justify-content:space-around;
+  padding:0 .5rem;
+}
+.mnBtn{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  background:none;border:none;cursor:pointer;
+  color:var(--mid);font-size:.6rem;font-weight:500;
+  padding:.5rem .6rem;border-radius:12px;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;min-width:52px;
+}
+.mnBtn.active,.mnBtn:active{color:var(--c);}
+.mnIc{font-size:1.25rem;line-height:1;}
+</style>
+</head>
+<body>
+
+<!-- CURSOR (desktop only) -->
+<div style="position:fixed;width:12px;height:12px;border-radius:50%;background:var(--c);pointer-events:none;z-index:99999;transform:translate(-50%,-50%);transition:width .18s,height .18s,background .18s;" id="cur"></div>
+
+<!-- ═══ SPLASH ═══ -->
+<div id="splash" style="position:fixed;inset:0;z-index:9500;background:#0D0D14;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;touch-action:manipulation;">
+  <div id="sI" style="display:flex;flex-direction:column;align-items:center;gap:1.8rem;animation:up .7s ease both;">
+    <div class="sLogo">Vaben</div>
+    <p class="sTag">La marketplace qui connecte acheteurs et vendeurs passionnés.</p>
+    <div class="sDots"><div class="sd sd1"></div><div class="sd sd2"></div><div class="sd sd3"></div></div>
+    <button id="btnCommencer" style="padding:.82rem 2.6rem;border-radius:999px;border:none;cursor:pointer;background:linear-gradient(135deg,#E53E3E,#6B21A8);color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;min-width:180px;min-height:54px;">Commencer</button>
+  </div>
+  <div id="sL" style="display:none;flex-direction:column;align-items:center;gap:1.6rem;animation:up .45s ease both;width:100%;max-width:460px;">
+    <div class="sLT">Choisissez votre langue</div>
+    <p style="color:rgba(255,255,255,.32);font-size:.82rem;">Select your preferred language</p>
+    <div class="lgrid">
+      <button class="lb" id="lb_fr"><span class="lf">🇫🇷</span><span class="ln">Français</span><span class="lnt">French</span></button>
+      <button class="lb" id="lb_en"><span class="lf">🇬🇧</span><span class="ln">English</span><span class="lnt">English</span></button>
+      <button class="lb" id="lb_he"><span class="lf">🇮🇱</span><span class="ln">עברית</span><span class="lnt">Hebrew</span></button>
+      <button class="lb" id="lb_ar"><span class="lf">🇸🇦</span><span class="ln">العربية</span><span class="lnt">Arabic</span></button>
+      <button class="lb" id="lb_de"><span class="lf">🇩🇪</span><span class="ln">Deutsch</span><span class="lnt">German</span></button>
+      <button class="lb" id="lb_es"><span class="lf">🇪🇸</span><span class="ln">Español</span><span class="lnt">Spanish</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ AUTH ═══ -->
+<div id="authWall" style="position:fixed;inset:0;z-index:8000;background:linear-gradient(160deg,#0a0a10,#18082a,#0a0a10);display:none;align-items:center;justify-content:center;padding:1rem;">
+  <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none;">
+    <div class="ab ab1"></div><div class="ab ab2"></div><div class="ab ab3"></div>
+  </div>
+  <div class="ac">
+    <div class="aNotice"><p id="awNote">Sans connexion, vous pouvez <strong>uniquement consulter</strong> les produits. Pour acheter, vendre ou contacter un vendeur, connectez-vous.</p></div>
+    <div class="aLogo">Vaben</div>
+    <div class="aTitle" id="awTitle">Connexion</div>
+    <p class="aSub" id="awSub">Accédez à toutes les fonctionnalités.</p>
+    <button class="gBtn" onclick="googleLogin()">
+      <svg width="17" height="17" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      <span id="awGTxt">Continuer avec Google</span>
+    </button>
+    <div class="orDiv"><span id="awOr">ou par e-mail</span></div>
+    <div class="aErr" id="awErr"></div>
+    <input class="aInp" type="email" id="awEmail" placeholder="email@exemple.com"/>
+    <input class="aInp" type="password" id="awPass" placeholder="Mot de passe (min. 6 caractères)"/>
+    <button class="aSub2" onclick="emailLogin()" id="awBtn">Se connecter</button>
+    <p class="aToggle" id="awToggle">Pas encore de compte ? <a onclick="toggleMode()">S'inscrire</a></p>
+    <a class="aSkip" onclick="guestMode()" id="awSkip">Continuer sans compte (accès limité)</a>
+  </div>
+</div>
+
+<!-- ═══ MAIN APP ═══ -->
+<div id="app" style="display:none;">
+
+<!-- NAV -->
+<nav>
+  <span class="logo">Vaben</span>
+  <ul class="navL">
+    <li><a href="#cats">Catégories</a></li>
+    <li><a href="#prods">Produits</a></li>
+    <li><a href="#sellers">Vendeurs</a></li>
+    <li><a onclick="showFavs()" id="navFavs" style="cursor:pointer">Favoris <span id="favCount" style="background:var(--c);color:#fff;border-radius:999px;padding:0 .4rem;font-size:.7rem;display:none">0</span></a></li>
+  </ul>
+  <div class="navR">
+    <button class="nb nbR" id="navSell" onclick="reqAuth(openSell)" style="display:none">Vendre</button>
+    <button class="ib" onclick="toggleSett()">&#9881;</button>
+    <!-- Cart -->
+    <button class="cartBtn" onclick="reqAuth(openCart)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <span class="cartN" id="cartN">0</span>
+    </button>
+    <div id="uWrap" style="position:relative;display:none;">
+      <div class="uPill" onclick="toggleDrop()">
+        <div class="uAv" id="uAv">?</div>
+        <span class="uNm" id="uNm">Compte</span>
+        <span style="font-size:.62rem;color:var(--mid)">▾</span>
+      </div>
+      <div class="uDrop" id="uDrop">
+        <div class="uDi" onclick="reqAuth(openSell);closeDrop()">Vendre un article</div>
+        <div class="uDi" onclick="showFavs();closeDrop()">Mes favoris</div>
+        <div class="uDi" onclick="reqAuth(openChatPanel);closeDrop()">Mes messages</div>
+        <div class="uSep"></div>
+        <div class="uDi" onclick="toggleSett();closeDrop()">Paramètres</div>
+        <div class="uSep"></div>
+        <div class="uDi red" onclick="logout()">Déconnexion</div>
+      </div>
+    </div>
+    <button class="nb nbO" id="navSignIn" onclick="showAuth()" style="display:none">Connexion</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hb hb1"></div><div class="hb hb2"></div><div class="hb hb3"></div>
+  <div class="hText">
+    <div class="hBadge"><span class="hBdot"></span><span>La marketplace de référence</span></div>
+    <h1>Achetez.<br/>Vendez.<br/><em>Vibrez.</em></h1>
+    <p class="hSub">Vaben connecte des milliers d'acheteurs et de vendeurs passionnés. Trouvez des articles uniques ou lancez votre boutique dès aujourd'hui.</p>
+    <div class="hCtas">
+      <button class="btn bC" onclick="document.getElementById('prods').scrollIntoView({behavior:'smooth'})">Voir les produits</button>
+      <button class="btn bO" onclick="reqAuth(openSell)">Vendre un article</button>
+    </div>
+    <div class="hStats">
+      <div><div class="sNum" id="statProd">48K+</div><div class="sLbl">Produits actifs</div></div>
+      <div><div class="sNum">12K+</div><div class="sLbl">Vendeurs</div></div>
+      <div><div class="sNum">99K+</div><div class="sLbl">Acheteurs</div></div>
+    </div>
+  </div>
+  <div class="hVis">
+    <div class="fpil fp1">Tendance aujourd'hui</div>
+    <div class="cGrid">
+      <div class="mc mc1"><div class="mcE">&#128473;</div><div class="mcT">Sneakers Rétro</div><div class="mcP">₪329</div><span class="mcB">Nouveau</span></div>
+      <div class="mc mc2"><div class="mcE">&#127927;</div><div class="mcT">Guitare Vintage</div><div class="mcP">₪1,260</div><span class="mcB" style="background:var(--v)">Rare</span></div>
+      <div class="mc mc3"><div class="mcE" style="width:64px;height:64px;font-size:2rem">&#128247;</div><div><div class="mcT">Appareil Photo</div><div class="mcP">₪611</div><span class="mcB" style="background:var(--c)">Flash</span></div></div>
+    </div>
+    <div class="fpil fp2">1 247 ventes aujourd'hui</div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section class="catSec rev" id="cats">
+  <div class="sLabel">Parcourir</div>
+  <h2 class="sTitle">Toutes les <span>catégories</span></h2>
+  <div class="catGrid">
+    <div class="ci cc1" onclick="filterBycat('Mode')"><div class="ciIc">&#128248;</div><div class="ciNm">Mode & Style</div><div class="ciCt" id="cntFashion">0 articles</div></div>
+    <div class="ci cc2" onclick="filterBycat('Musique')"><div class="ciIc">&#127927;</div><div class="ciNm">Musique</div><div class="ciCt" id="cntMusic">0 articles</div></div>
+    <div class="ci cc3" onclick="filterBycat('Tech')"><div class="ciIc">&#128241;</div><div class="ciNm">Tech & Gadgets</div><div class="ciCt" id="cntTech">0 articles</div></div>
+    <div class="ci cc4" onclick="filterBycat('Art')"><div class="ciIc">&#127912;</div><div class="ciNm">Art & Déco</div><div class="ciCt" id="cntArt">0 articles</div></div>
+    <div class="ci cc5" onclick="filterBycat('Livres')"><div class="ciIc">&#128218;</div><div class="ciNm">Livres</div><div class="ciCt" id="cntBooks">0 articles</div></div>
+    <div class="ci cc6" onclick="filterBycat('Sport')"><div class="ciIc">&#127947;</div><div class="ciNm">Sport</div><div class="ciCt" id="cntSport">0 articles</div></div>
+    <div class="ci cc1" onclick="filterBycat('Maison')"><div class="ciIc">&#127804;</div><div class="ciNm">Maison & Jardin</div><div class="ciCt" id="cntHome">0 articles</div></div>
+    <div class="ci cc3" onclick="filterBycat('Auto')"><div class="ciIc">&#128663;</div><div class="ciNm">Auto & Moto</div><div class="ciCt" id="cntAuto">0 articles</div></div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section id="prods" style="padding-top:70px;">
+  <div class="ph rev">
+    <div>
+      <div class="sLabel">Sélection</div>
+      <h2 class="sTitle">Tous les <span>articles</span></h2>
+      <div class="chips" id="filterChips">
+        <button class="chip a" onclick="filterCat('Tous',this)">Tous</button>
+        <button class="chip" onclick="filterCat('Mode',this)">Mode</button>
+        <button class="chip" onclick="filterCat('Tech',this)">Tech</button>
+        <button class="chip" onclick="filterCat('Musique',this)">Musique</button>
+        <button class="chip" onclick="filterCat('Art',this)">Art</button>
+        <button class="chip" onclick="filterCat('Sport',this)">Sport</button>
+        <button class="chip" onclick="filterCat('Maison',this)">Maison</button>
+        <button class="chip" onclick="filterCat('Livres',this)">Livres</button>
+        <button class="chip" onclick="filterCat('Auto',this)">Auto</button>
+      </div>
+    </div>
+    <button class="btn bO" onclick="reqAuth(openSell)">+ Vendre</button>
+  </div>
+  <div class="pgrid rev" id="prodGrid">
+    <div class="emptyState">
+      <div style="font-size:2.5rem">&#128722;</div>
+      <p>Aucun article pour le moment.<br/>Soyez le premier à vendre !</p>
+    </div>
+  </div>
+</section>
+
+<!-- BANNER -->
+<div class="bnrWrap rev">
+  <div class="bnr">
+    <div><h2>Devenez vendeur sur Vaben</h2><p>Zéro frais d'inscription · Commission 5% · Boutique en 5 minutes</p></div>
+    <button class="btn bW" onclick="reqAuth(openSell)">Ouvrir ma boutique</button>
+  </div>
+</div>
+
+<!-- SELLERS -->
+<section class="sellSec rev" id="sellers">
+  <div class="sLabel">Communauté</div>
+  <h2 class="sTitle">Vendeurs <span>étoiles</span></h2>
+  <div class="sellGrid">
+    <div class="sc"><div class="scAv sa1">SL</div><div class="scNm">Studio Lune</div><div class="scSp">Mode & Accessoires</div><span class="vBdg">Vérifié</span><div class="scStats"><div class="sst"><strong>432</strong>ventes</div><div class="sst"><strong>4.9</strong>note</div></div><button class="chatSelBtn" onclick="reqAuth(()=>startChat('StudioLune','SL','sa1'))">Contacter</button></div>
+    <div class="sc"><div class="scAv sa2">VS</div><div class="scNm">VintageShot</div><div class="scSp">Photo & Tech</div><span class="vBdg">Vérifié</span><div class="scStats"><div class="sst"><strong>289</strong>ventes</div><div class="sst"><strong>4.8</strong>note</div></div><button class="chatSelBtn" onclick="reqAuth(()=>startChat('VintageShot','VS','sa2'))">Contacter</button></div>
+    <div class="sc"><div class="scAv sa3">AK</div><div class="scNm">Atelier K</div><div class="scSp">Art & Déco</div><span class="vBdg">Vérifié</span><div class="scStats"><div class="sst"><strong>187</strong>ventes</div><div class="sst"><strong>5.0</strong>note</div></div><button class="chatSelBtn" onclick="reqAuth(()=>startChat('AtelierK','AK','sa3'))">Contacter</button></div>
+    <div class="sc"><div class="scAv sa4">RC</div><div class="scNm">RockCorner</div><div class="scSp">Musique & Instruments</div><span class="vBdg">Vérifié</span><div class="scStats"><div class="sst"><strong>356</strong>ventes</div><div class="sst"><strong>4.7</strong>note</div></div><button class="chatSelBtn" onclick="reqAuth(()=>startChat('RockCorner','RC','sa4'))">Contacter</button></div>
+  </div>
+</section>
+
+<!-- FAVORITES PAGE -->
+<div id="favsPage">
+  <div class="sLabel">Mes favoris</div>
+  <h2 class="sTitle" style="margin-bottom:2rem">Articles <span>sauvegardés</span></h2>
+  <div class="pgrid" id="favsGrid">
+    <div class="favsEmpty"><div style="font-size:2.5rem">&#9825;</div><p>Aucun favori pour le moment.</p></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="fgGrid">
+    <div class="fb"><span class="logo">Vaben</span><p>La marketplace colorée qui connecte acheteurs et vendeurs passionnés en Israël et dans le monde.</p><div style="margin-top:.85rem"><p style="font-size:.73rem;color:rgba(255,255,255,.28);margin-bottom:.22rem">Contact & Support</p><a href="mailto:vaben@gmail.com" class="eml">vaben@gmail.com</a></div><div class="socials" style="margin-top:1rem"><a class="socialBtn" href="#">in</a><a class="socialBtn" href="#">tw</a><a class="socialBtn" href="#">yt</a></div></div>
+    <div class="fc"><h4>Explorer</h4><ul><li><a onclick="filterCat('Tous',null)">Tous les articles</a></li><li><a>Tendances</a></li><li><a>Flash Sales</a></li></ul></div>
+    <div class="fc"><h4>Vendeurs</h4><ul><li><a onclick="reqAuth(openSell)">Créer une boutique</a></li><li><a>Tarifs</a></li><li><a>Guide vendeur</a></li></ul></div>
+    <div class="fc"><h4>Aide</h4><ul><li><a>Centre d'aide</a></li><li><a>Livraisons</a></li><li><a href="mailto:vaben@gmail.com">vaben@gmail.com</a></li></ul></div>
+  </div>
+  <div class="fBot"><p>© 2026 Vaben. Tous droits réservés.</p></div>
+</footer>
+
+</div><!-- /app -->
+
+<!-- ═══ CART SIDEBAR ═══ -->
+<div class="cartOv" id="cartOv" onclick="closeCart()"></div>
+<div id="cartSidebar">
+  <div class="cartHdr">
+    <h3>Mon panier <span id="cartTitle" style="color:var(--mid);font-weight:400;font-size:.85rem"></span></h3>
+    <button class="cartClose" onclick="closeCart()">&#215;</button>
+  </div>
+  <div class="cartItems" id="cartItemsEl">
+    <div class="cartEmpty"><div style="font-size:2.5rem">&#128722;</div><span>Votre panier est vide</span></div>
+  </div>
+  <div class="cartFoot" id="cartFoot" style="display:none">
+    <div class="cartTot"><span class="cartTotLbl">Total</span><span class="cartTotP" id="cartTotEl">₪0</span></div>
+    <button class="checkoutBtn" onclick="openCheckout()">Passer la commande</button>
+  </div>
+</div>
+
+<!-- ═══ CHECKOUT MODAL ═══ -->
+<div id="checkoutModal">
+  <div class="ckCard">
+    <div class="ckHdr"><h3>Finaliser la commande</h3><button class="ckClose" onclick="closeCheckout()">&#215;</button></div>
+    <div class="ckBody">
+
+      <!-- STEP 1 : Infos livraison -->
+      <div id="ckStep1">
+        <div class="ckForm">
+          <div class="ckSection">Informations de livraison</div>
+          <input class="ckInp" type="text" id="ckName" placeholder="Nom complet"/>
+          <input class="ckInp" type="email" id="ckEmail" placeholder="E-mail de confirmation"/>
+          <input class="ckInp" type="tel" id="ckPhone" placeholder="Téléphone"/>
+          <input class="ckInp" type="text" id="ckAddr" placeholder="Adresse complète"/>
+          <input class="ckInp" type="text" id="ckCity" placeholder="Ville"/>
+          <div class="ckSection" style="margin-top:.4rem">Résumé de la commande</div>
+          <div class="ckSummary" id="ckSummary"></div>
+        </div>
+        <div class="ckTot"><span class="ckTotLbl">Total à payer</span><span class="ckTotP" id="ckTotEl">₪0</span></div>
+        <button class="ckSubmit" onclick="goToStripeStep()">Continuer vers le paiement →</button>
+      </div>
+
+      <!-- STEP 2 : Paiement Stripe -->
+      <div id="ckStep3" style="display:none">
+        <button onclick="document.getElementById('ckStep1').style.display='block';document.getElementById('ckStep3').style.display='none';" style="background:none;border:none;cursor:pointer;color:var(--mid);font-size:.95rem;margin-bottom:1rem;padding:0;display:flex;align-items:center;gap:.3rem;">← Retour</button>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+          <div style="font-weight:700;font-size:1rem;">Paiement sécurisé</div>
+          <svg width="48" height="20" viewBox="0 0 48 20"><rect width="48" height="20" rx="4" fill="#635BFF"/><text x="7" y="14" font-size="11" fill="#fff" font-family="Arial,sans-serif" font-weight="bold">stripe</text></svg>
+        </div>
+        <div style="background:#f0f0ff;border:1px solid #d0ccff;border-radius:10px;padding:.7rem 1rem;margin-bottom:1rem;font-size:.8rem;color:#5851d8;">
+          🔒 Paiement chiffré SSL — Visa, Mastercard, Amex acceptés
+        </div>
+        <div style="font-size:.8rem;color:var(--mid);margin-bottom:.4rem;font-weight:500;">Numéro de carte</div>
+        <div id="stripe-card-element" style="padding:.85rem 1rem;border:1.5px solid var(--bd);border-radius:10px;background:#fff;margin-bottom:.5rem;min-height:46px;"></div>
+        <div id="stripe-errors" style="color:var(--c);font-size:.78rem;min-height:1.1em;margin-bottom:.5rem;"></div>
+        <div style="font-size:.72rem;color:var(--mid);text-align:center;margin-bottom:.8rem;">Commission plateforme 0.5% incluse • Séquestre jusqu'à réception</div>
+        <button class="ckSubmit" id="stripePayBtn" onclick="submitStripePayment()">
+          <span id="stripePayLabel">🔒 Payer maintenant</span>
+        </button>
+      </div>
+
+      <!-- STEP 3 : Confirmation -->
+      <div class="ckConfirm" id="ckStep2">
+        <div class="ckConfIc"></div>
+        <h4>Paiement confirmé ! 🎉</h4>
+        <p>Confirmation envoyée à <span class="emailHl" id="ckConfEmail"></span>.<br/><br/>
+        Votre argent est <strong>bloqué en séquestre</strong> chez Stripe. Il sera envoyé au vendeur uniquement quand vous confirmez avoir reçu votre colis.</p>
+        <div id="ckOrderId" style="background:#f5f5f0;border-radius:10px;padding:.7rem 1rem;margin:1rem 0;font-size:.8rem;color:var(--mid);">
+          N° commande : <strong id="ckOrderNum"></strong>
+        </div>
+        <button class="btn" style="width:100%;background:var(--g);color:#fff;margin-bottom:.7rem;padding:.9rem;border-radius:12px;font-weight:700;font-size:.95rem;border:none;cursor:pointer;" onclick="confirmReceived()">
+          ✅ J'ai reçu mon colis — Envoyer l'argent au vendeur
+        </button>
+        <button class="btn bV" style="width:100%;opacity:.6" onclick="closeCheckout();clearCart()">Fermer sans confirmer</button>
+        <p style="font-size:.72rem;color:var(--mid);margin-top:.8rem;">⚠️ Ne confirmez que si vous avez bien reçu votre colis. L'action est irréversible.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SELL MODAL ═══ -->
+<div id="sellModal">
+  <div class="smCard">
+    <button class="smClose" onclick="closeSell()">&#215;</button>
+    <div class="smHdr">
+      <h2>Vends ton article</h2>
+      <p>Ajoute des photos et décris ton article. Il apparaîtra immédiatement sur la page d'accueil.</p>
+    </div>
+    <div class="smBody">
+      <!-- Photos -->
+      <div class="fg">
+        <label>Photos <span style="color:var(--c)">(max 5 — obligatoire)</span></label>
+        <div class="pzn" onclick="document.getElementById('pIn').click()">
+          <div class="pzIc"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--v)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
+          <div class="pzTxt"><strong>Ajouter des photos</strong><br/>Cliquez ou glissez vos images ici</div>
+        </div>
+        <input type="file" id="pIn" accept="image/*" multiple style="display:none" onchange="prevPhotos(event)"/>
+        <div class="pprev" id="pprev"></div>
+      </div>
+      <!-- Title -->
+      <div class="fg"><label><span style="color:var(--c)">*</span> Titre de l'annonce</label><input class="fi" type="text" id="smT" placeholder="Ex: Veste en cuir noire taille M"/></div>
+      <!-- Description -->
+      <div class="fg"><label>Description détaillée</label><textarea class="ft" id="smD" placeholder="Décrivez l'état, la taille, la marque, pourquoi vous vendez..."></textarea></div>
+      <!-- Category + Condition -->
+      <div class="r2">
+        <div class="fg"><label><span style="color:var(--c)">*</span> Catégorie</label>
+          <select class="fs" id="smCat">
+            <option value="">Choisir une catégorie</option>
+            <option>Mode</option><option>Tech</option><option>Musique</option>
+            <option>Art</option><option>Livres</option><option>Sport</option>
+            <option>Maison</option><option>Auto</option>
+          </select>
+        </div>
+        <div class="fg"><label><span style="color:var(--c)">*</span> Etat</label>
+          <select class="fs" id="smEtat">
+            <option value="">Choisir l'état</option>
+            <option>Neuf avec étiquette</option><option>Neuf sans étiquette</option>
+            <option>Très bon état</option><option>Bon état</option><option>Usé</option>
+          </select>
+        </div>
+      </div>
+      <!-- Size + Shoe size -->
+      <div class="r2">
+        <div class="fg"><label>Taille vêtement</label><select class="fs"><option value="">Non applicable</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></div>
+        <div class="fg"><label>Pointure chaussure</label><select class="fs"><option value="">Non applicable</option><option>35</option><option>36</option><option>37</option><option>38</option><option>39</option><option>40</option><option>41</option><option>42</option><option>43</option><option>44</option><option>45</option></select></div>
+      </div>
+      <!-- Brand + Color -->
+      <div class="r2">
+        <div class="fg"><label>Marque</label><input class="fi" id="smBrand" type="text" placeholder="Nike, Apple, IKEA..."/></div>
+        <div class="fg"><label>Couleur</label><input class="fi" id="smColor" type="text" placeholder="Noir, blanc, bleu..."/></div>
+      </div>
+      <!-- City + Delivery -->
+      <div class="r2">
+        <div class="fg"><label>Ville</label><input class="fi" id="smCity" type="text" placeholder="Tel Aviv, Jérusalem, Paris..."/></div>
+        <div class="fg"><label>Mode de remise</label>
+          <select class="fs" id="smRemise">
+            <option value="">Choisir</option>
+            <option>Envoi postal</option><option>En main propre</option><option>Les deux</option>
+          </select>
+        </div>
+      </div>
+      <!-- Price -->
+      <div class="fg"><label><span style="color:var(--c)">*</span> Prix en shekels (₪)</label><div class="pw"><span class="ps">₪</span><input class="fi fi-p" type="number" id="smPrice" min="1" placeholder="0"/></div></div>
+      <!-- Submit -->
+      <button class="smSubmit" onclick="publishArticle()">Publier l'article</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CHAT PANEL ═══ -->
+<button class="chatFab" id="chatFab" onclick="reqAuth(openChatPanel)">&#128172;</button>
+<div id="chatPanel">
+  <div class="cpHdr">
+    <div class="cpInfo"><div class="cpAv" id="cpAv">?</div><div><div class="cpNm" id="cpNm">Messages</div><div class="cpSt"><span class="cpDot"></span><span>En ligne</span></div></div></div>
+    <button class="cpCl" onclick="closeChatPanel()">&#215;</button>
+  </div>
+  <div class="cpTabs">
+    <div class="cpTab active" onclick="showTab('c')" id="tC">Conversations</div>
+    <div class="cpTab" onclick="showTab('m')" id="tM">Chat</div>
+  </div>
+  <div id="cpContacts"><div class="noConv">Aucune conversation.<br/>Contactez un vendeur pour commencer.</div></div>
+  <div id="cpConv" style="display:none"><div id="cpMsgs"></div><div class="cpInpR"><input class="cpInp" id="chatIn" placeholder="Votre message..." onkeydown="if(event.key==='Enter')sendMsg()"/><button class="cpSend" onclick="sendMsg()">&#10148;</button></div></div>
+</div>
+
+<!-- SETTINGS -->
+<div class="settOv" id="settOv" onclick="toggleSett()"></div>
+<div id="settPanel">
+  <div class="spH"><h3>Paramètres</h3><button class="spCl" onclick="toggleSett()">&#215;</button></div>
+  <div class="spB">
+    <div class="spSec">
+      <div class="spSecT">Langue</div>
+      <div style="padding-bottom:1rem;border-bottom:1px solid rgba(0,0,0,.04)">
+        <div class="spRL">Langue de l'application</div>
+        <div class="lmr">
+          <button class="lmb a" onclick="cL('fr',this)">FR</button>
+          <button class="lmb" onclick="cL('en',this)">EN</button>
+          <button class="lmb" onclick="cL('he',this)">HE</button>
+          <button class="lmb" onclick="cL('ar',this)">AR</button>
+          <button class="lmb" onclick="cL('de',this)">DE</button>
+          <button class="lmb" onclick="cL('es',this)">ES</button>
+        </div>
+      </div>
+    </div>
+    <div class="spSec">
+      <div class="spSecT">Mon compte</div>
+      <div class="spRow" style="cursor:default"><div><div class="spRL" id="spName">-</div><div class="spRS" id="spEmail">-</div></div></div>
+      <div class="spRow" onclick="reqAuth(openSell);toggleSett()"><div class="spRL">Vendre un article</div><span>›</span></div>
+      <div class="spRow" onclick="showFavs();toggleSett()"><div class="spRL">Mes favoris</div><span>›</span></div>
+      <div class="spRow" onclick="reqAuth(openChatPanel);toggleSett()"><div class="spRL">Mes messages</div><span>›</span></div>
+    </div>
+    <div class="spSec">
+      <div class="spSecT">Support</div>
+      <div class="spRow" style="cursor:default"><div><div class="spRL">E-mail</div><div class="spRS">vaben@gmail.com</div></div><a href="mailto:vaben@gmail.com" style="color:var(--v);font-size:.8rem;font-weight:600;text-decoration:none">Ecrire</a></div>
+      <div class="spRow" onclick="reqAuth(openChatPanel);toggleSett()"><div class="spRL">Chat en direct</div><span style="width:7px;height:7px;border-radius:50%;background:var(--g);display:inline-block"></span></div>
+    </div>
+    <div class="spSec">
+      <div class="spSecT">A propos</div>
+      <div class="spRow" style="cursor:default"><div><div class="spRL">Vaben</div><div class="spRS">Version 3.0.0</div></div></div>
+      <div class="spRow" onclick="openAdminLogin()"><div><div class="spRL" style="color:#111;font-weight:700;display:flex;align-items:center;gap:.5rem"><span style="background:#111;color:#fff;width:22px;height:22px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem">&#9670;</span> Administrateurs</div><div class="spRS">Accès restreint</div></div><span style="color:var(--mid)">›</span></div>
+      <div class="spRow" onclick="logout()"><div class="spRL" style="color:var(--c)">Se déconnecter</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><div class="tDot"></div><span id="toastMsg"></span></div>
+
+<!-- ═══ BARRE NAV MOBILE ═══ -->
+<nav id="mobileNav">
+  <button class="mnBtn" onclick="document.getElementById('cats').scrollIntoView({behavior:'smooth'})">
+    <span class="mnIc">&#127873;</span>Catégories
+  </button>
+  <button class="mnBtn" onclick="document.getElementById('prods').scrollIntoView({behavior:'smooth'})">
+    <span class="mnIc">&#128722;</span>Produits
+  </button>
+  <button class="mnBtn" onclick="reqAuth(openSell)" id="mnSell">
+    <span class="mnIc">&#43;&#65039;</span>Vendre
+  </button>
+  <button class="mnBtn" onclick="showFavs()">
+    <span class="mnIc">&#10084;&#65039;</span>Favoris
+  </button>
+  <button class="mnBtn" onclick="reqAuth(openCart)" style="position:relative">
+    <span class="mnIc">&#128717;</span>Panier
+    <span id="mobileCartN" style="position:absolute;top:4px;right:8px;background:var(--c);color:#fff;width:16px;height:16px;border-radius:50%;font-size:.55rem;font-weight:700;display:none;align-items:center;justify-content:center;">0</span>
+  </button>
+</nav>
+
+<script>
+// ═══════════════════ STATE ═══════════════════
+let user = null, isGuest = false, loginMode = true;
+let cart = [], favorites = [], articles = [], contacts = {};
+let currentChatId = null, currentSeller = null;
+let activeCat = 'Tous', photoFiles = [], toastT;
+let lang = 'fr';
+
+// LS helpers
+const LS = {
+  get: k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+  set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
+  del: k => localStorage.removeItem(k)
+};
+
+// ═══════════════════ INIT ═══════════════════
+// Attacher les events touch+click au splash — APRÈS DOM chargé
+function initSplashEvents() {
+  function addTap(el, fn) {
+    if (!el) return;
+    // touchend avec preventDefault pour éviter le délai 300ms iOS
+    el.addEventListener('touchstart', function(e) { e.stopPropagation(); }, { passive: true });
+    el.addEventListener('touchend', function(e) { e.preventDefault(); e.stopPropagation(); fn(); }, { passive: false });
+    el.addEventListener('click', function(e) { e.stopPropagation(); fn(); });
+  }
+  addTap(document.getElementById('btnCommencer'), showLangStep);
+  [['lb_fr','fr'],['lb_en','en'],['lb_he','he'],['lb_ar','ar'],['lb_de','de'],['lb_es','es']].forEach(([id, code]) => {
+    const btn = document.getElementById(id);
+    addTap(btn, () => pickLang(code, btn));
+  });
+}
+
+function init() {
+  // Load persisted data
+  articles = LS.get('vaben_articles') || [];
+  favorites = LS.get('vaben_favs') || [];
+  cart = LS.get('vaben_cart') || [];
+
+  const sess = LS.get('vaben_session');
+  if (sess) {
+    user = sess; isGuest = false;
+    document.getElementById('splash').style.display = 'none';
+    document.getElementById('authWall').style.display = 'none';
+    launchApp();
+  }
+  // cursor — desktop only (pas de touch)
+  const cur = document.getElementById('cur');
+  if (window.matchMedia('(hover:hover) and (pointer:fine)').matches) {
+    document.addEventListener('mousemove', e => { cur.style.left = e.clientX + 'px'; cur.style.top = e.clientY + 'px'; });
+  } else {
+    cur.style.display = 'none';
+  }
+
+  // Init events touch du splash
+  initSplashEvents();
+}
+
+// Lancer APRÈS que le DOM soit complètement chargé
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+// ═══════════════════ SPLASH ═══════════════════
+function showLangStep() {
+  document.getElementById('sI').style.display = 'none';
+  const l = document.getElementById('sL');
+  l.style.display = 'flex';
+  l.style.animation = 'up .45s ease both';
+}
+function pickLang(l, btn) {
+  lang = l;
+  document.querySelectorAll('.lb').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  setTimeout(() => {
+    document.getElementById('splash').style.display = 'none';
+    const sess = LS.get('vaben_session');
+    if (sess) { user = sess; launchApp(); }
+    else { document.getElementById('authWall').style.display = 'flex'; }
+  }, 320);
+}
+
+// ═══════════════════ AUTH ═══════════════════
+function googleLogin() {
+  // Simulated Google login — user provides their own info
+  const name = prompt('Connexion Google\n\nEntrez votre nom :');
+  if (!name || !name.trim()) return;
+  const email = prompt('Entrez votre adresse Gmail :');
+  if (!email || !email.includes('@')) { alert('E-mail invalide.'); return; }
+  const u = { uid: 'g_' + Date.now(), name: name.trim(), email: email.trim(), photo: null, method: 'google' };
+  LS.set('vaben_session', u);
+  loginUser(u);
+}
+
+function emailLogin() {
+  const email = document.getElementById('awEmail').value.trim();
+  const pass = document.getElementById('awPass').value;
+  if (!email || !pass) { setErr('Remplissez tous les champs.'); return; }
+  if (pass.length < 6) { setErr('Mot de passe minimum 6 caractères.'); return; }
+  const users = LS.get('vaben_users') || {};
+  if (loginMode) {
+    if (!users[email]) { setErr('Compte introuvable. Créez un compte.'); return; }
+    if (users[email].pass !== pass) { setErr('Mot de passe incorrect.'); return; }
+    loginUser(users[email]);
+  } else {
+    if (users[email]) { setErr('Ce compte existe déjà. Connectez-vous.'); return; }
+    const u = { uid: 'u_' + Date.now(), name: email.split('@')[0], email, pass, photo: null, method: 'email' };
+    users[email] = u; LS.set('vaben_users', users); LS.set('vaben_session', u);
+    loginUser(u);
+  }
+}
+
+function loginUser(u) {
+  user = u; isGuest = false;
+  LS.set('vaben_session', u);
+  document.getElementById('authWall').style.display = 'none';
+  launchApp();
+  toast('Bienvenue sur Vaben, ' + u.name + ' !');
+}
+
+function guestMode() {
+  isGuest = true; user = null;
+  document.getElementById('authWall').style.display = 'none';
+  launchApp();
+  toast('Accès limité — Connectez-vous pour acheter ou vendre');
+}
+
+function showAuth() {
+  document.getElementById('authWall').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+function logout() {
+  LS.del('vaben_session'); user = null; isGuest = false;
+  cart = []; LS.del('vaben_cart');
+  toast('Déconnecté'); setTimeout(() => location.reload(), 600);
+}
+
+function toggleMode() {
+  loginMode = !loginMode;
+  document.getElementById('awTitle').textContent = loginMode ? 'Connexion' : 'Créer un compte';
+  document.getElementById('awBtn').textContent = loginMode ? 'Se connecter' : 'S\'inscrire';
+  document.getElementById('awToggle').innerHTML = loginMode ? 'Pas encore de compte ? <a onclick="toggleMode()">S\'inscrire</a>' : 'Déjà un compte ? <a onclick="toggleMode()">Se connecter</a>';
+  setErr('');
+}
+function setErr(m) { document.getElementById('awErr').textContent = m; }
+
+function reqAuth(fn) {
+  if (!user) { toast('Connectez-vous pour accéder à cette fonctionnalité'); setTimeout(showAuth, 700); return; }
+  fn();
+}
+
+function launchApp() {
+  document.getElementById('app').style.display = 'block';
+  applyUserNav();
+  renderProducts();
+  updateCartBadge();
+  updateFavBadge();
+  initReveal();
+}
+
+function applyUserNav() {
+  if (user) {
+    const av = document.getElementById('uAv');
+    av.innerHTML = user.photo ? `<img src="${user.photo}"/>` : (user.name[0] || '?').toUpperCase();
+    document.getElementById('uNm').textContent = user.name;
+    document.getElementById('uWrap').style.display = 'flex';
+    document.getElementById('navSignIn').style.display = 'none';
+    document.getElementById('navSell').style.display = 'flex';
+    document.getElementById('spName').textContent = user.name;
+    document.getElementById('spEmail').textContent = user.email || '';
+    // hide locks
+    document.querySelectorAll('.lockOv').forEach(el => el.style.display = 'none');
+  } else {
+    document.getElementById('uWrap').style.display = 'none';
+    document.getElementById('navSignIn').style.display = 'flex';
+    document.getElementById('navSell').style.display = 'none';
+    // show locks
+    document.querySelectorAll('.lockOv').forEach(el => el.style.display = 'flex');
+  }
+}
+
+// ═══════════════════ PRODUCTS ═══════════════════
+function renderProducts(cat) {
+  const grid = document.getElementById('prodGrid');
+  const filtered = (cat && cat !== 'Tous') ? articles.filter(a => a.cat === cat) : articles;
+  updateCategoryCounts();
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="emptyState"><div style="font-size:2.5rem">&#128722;</div><p>Aucun article ${cat && cat !== 'Tous' ? 'dans cette catégorie' : 'pour le moment'}.<br/>Soyez le premier à vendre !</p></div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map(a => buildProductCard(a)).join('');
+  // Update hero stat
+  document.getElementById('statProd').textContent = articles.length + (articles.length > 1 ? ' articles' : ' article');
+}
+
+function buildProductCard(a) {
+  const isFav = favorites.includes(a.id);
+  const imgs = a.photos && a.photos.length ? `<img src="${a.photos[0]}" alt="${a.title}"/>` : '';
+  const bgClass = a.photos && a.photos.length ? '' : ('pi' + ((Math.abs(hashCode(a.id)) % 6) + 1));
+  const catColors = {Mode:'#ffe0e0',Tech:'#e0f5ff',Musique:'#f0ffe0',Art:'#f0e0ff',Livres:'#fff5e0',Sport:'#e0fffa',Maison:'#f5f0ff',Auto:'#fff0e0'};
+  const bg = (!a.photos || !a.photos.length) ? `background:${catColors[a.cat]||'#f0f0ea'}` : '';
+  const lockHTML = !user ? `<div class="lockOv" style="display:flex"><div class="loIc">&#128274;</div><div class="loTxt">Connectez-vous pour acheter</div><button class="loBtn" onclick="showAuth()">Se connecter</button></div>` : '';
+  return `
+  <div class="pcard" id="pc_${a.id}">
+    <div class="pImg ${bgClass}" style="${bg}">
+      ${imgs}
+      ${!imgs ? `<span class="pEm">${catIcon(a.cat)}</span>` : ''}
+      <button class="pFav ${isFav ? 'liked' : ''}" onclick="toggleFav('${a.id}',this)" title="Ajouter aux favoris">${isFav ? '&#10084;' : '&#9825;'}</button>
+      <span class="pTag">${a.cat || 'Autre'}</span>
+    </div>
+    <div class="pBody">
+      <div class="pSeller">@${a.seller || 'Vendeur'} · ${a.city || ''}</div>
+      <div class="pName">${esc(a.title)}</div>
+      ${a.desc ? `<div class="pDesc">${esc(a.desc)}</div>` : ''}
+      <div class="pFoot">
+        <div>
+          <div class="pPrice">₪${Number(a.price).toLocaleString()}</div>
+          <div class="pRat">${a.condition || ''}</div>
+        </div>
+        <div class="pBtns">
+          <button class="pAdd" onclick="addToCart('${a.id}')" title="Ajouter au panier">+</button>
+          <button class="pBuy" onclick="addToCartAndOpen('${a.id}')">Acheter</button>
+        </div>
+      </div>
+    </div>
+    ${lockHTML}
+  </div>`;
+}
+
+function filterCat(cat, btn) {
+  activeCat = cat;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('a'));
+  if (btn) btn.classList.add('a');
+  renderProducts(cat);
+  document.getElementById('prods').scrollIntoView({ behavior: 'smooth' });
+}
+
+function filterBycat(cat) {
+  filterCat(cat, null);
+  // also update chip
+  document.querySelectorAll('.chip').forEach(c => { if (c.textContent.trim() === cat) { c.classList.add('a'); } });
+}
+
+function updateCategoryCounts() {
+  const counts = {};
+  articles.forEach(a => { counts[a.cat] = (counts[a.cat] || 0) + 1; });
+  const map = { Mode: 'cntFashion', Musique: 'cntMusic', Tech: 'cntTech', Art: 'cntArt', Livres: 'cntBooks', Sport: 'cntSport', Maison: 'cntHome', Auto: 'cntAuto' };
+  Object.entries(map).forEach(([cat, id]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = (counts[cat] || 0) + ' articles';
+  });
+}
+
+function catIcon(cat) {
+  const icons = { Mode: '&#128248;', Tech: '&#128241;', Musique: '&#127927;', Art: '&#127912;', Livres: '&#128218;', Sport: '&#127947;', Maison: '&#127804;', Auto: '&#128663;' };
+  return icons[cat] || '&#128722;';
+}
+
+// ═══════════════════ SELL ═══════════════════
+function openSell() { document.getElementById('sellModal').classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeSell() { document.getElementById('sellModal').classList.remove('open'); document.body.style.overflow = ''; }
+
+function prevPhotos(e) {
+  const prev = document.getElementById('pprev'); prev.innerHTML = '';
+  photoFiles = [];
+  Array.from(e.target.files).slice(0, 5).forEach(f => {
+    photoFiles.push(f);
+    const r = new FileReader();
+    r.onload = ev => { const i = document.createElement('img'); i.src = ev.target.result; prev.appendChild(i); };
+    r.readAsDataURL(f);
+  });
+}
+
+async function publishArticle() {
+  const title = document.getElementById('smT').value.trim();
+  const price = document.getElementById('smPrice').value;
+  const cat = document.getElementById('smCat').value;
+  const etat = document.getElementById('smEtat').value;
+  if (!title) { toast('Entrez un titre pour votre annonce'); return; }
+  if (!cat) { toast('Choisissez une catégorie'); return; }
+  if (!etat) { toast('Indiquez l\'état de l\'article'); return; }
+  if (!price || parseFloat(price) <= 0) { toast('Entrez un prix valide en shekels (₪)'); return; }
+
+  // Convert photos to base64 for storage
+  const photos = [];
+  for (const f of photoFiles) {
+    const b64 = await toBase64(f);
+    photos.push(b64);
+  }
+
+  const article = {
+    id: 'a_' + Date.now(),
+    title,
+    desc: document.getElementById('smD').value.trim(),
+    cat,
+    condition: etat,
+    brand: document.getElementById('smBrand').value.trim(),
+    color: document.getElementById('smColor').value.trim(),
+    city: document.getElementById('smCity').value.trim(),
+    remise: document.getElementById('smRemise').value,
+    price: parseFloat(price),
+    photos,
+    seller: user ? user.name : 'Vendeur',
+    sellerEmail: user ? user.email : '',
+    sellerId: user ? user.uid : 'guest',
+    createdAt: Date.now()
+  };
+
+  articles.unshift(article); // Add to beginning so it appears first
+  LS.set('vaben_articles', articles);
+  closeSell();
+  renderProducts(activeCat);
+  // Reset form
+  document.getElementById('smT').value = '';
+  document.getElementById('smD').value = '';
+  document.getElementById('smCat').value = '';
+  document.getElementById('smEtat').value = '';
+  document.getElementById('smBrand').value = '';
+  document.getElementById('smColor').value = '';
+  document.getElementById('smCity').value = '';
+  document.getElementById('smRemise').value = '';
+  document.getElementById('smPrice').value = '';
+  document.getElementById('pprev').innerHTML = '';
+  photoFiles = [];
+  document.getElementById('pIn').value = '';
+  toast('Votre article a été publié et est visible sur la page d\'accueil !');
+  // Scroll to products
+  setTimeout(() => { document.getElementById('prods').scrollIntoView({ behavior: 'smooth' }); }, 500);
+}
+
+function toBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = e => res(e.target.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+// ═══════════════════ CART ═══════════════════
+function addToCart(id) {
+  if (!user) { toast('Connectez-vous pour ajouter au panier'); setTimeout(showAuth, 700); return; }
+  const art = articles.find(a => a.id === id);
+  if (!art) return;
+  const existing = cart.find(c => c.id === id);
+  if (existing) { existing.qty++; }
+  else { cart.push({ id, title: art.title, price: art.price, seller: art.seller, photo: art.photos[0] || null, cat: art.cat, qty: 1 }); }
+  LS.set('vaben_cart', cart);
+  updateCartBadge();
+  toast('Ajouté au panier — ₪' + art.price.toLocaleString());
+}
+
+function addToCartAndOpen(id) {
+  addToCart(id);
+  if (user) setTimeout(() => openCart(), 400);
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(c => c.id !== id);
+  LS.set('vaben_cart', cart);
+  updateCartBadge();
+  renderCart();
+}
+
+function changeQty(id, d) {
+  const item = cart.find(c => c.id === id);
+  if (!item) return;
+  item.qty = Math.max(1, item.qty + d);
+  LS.set('vaben_cart', cart);
+  updateCartBadge();
+  renderCart();
+}
+
+function openCart() {
+  document.getElementById('cartSidebar').classList.add('open');
+  document.getElementById('cartOv').classList.add('open');
+  renderCart();
+}
+
+function closeCart() {
+  document.getElementById('cartSidebar').classList.remove('open');
+  document.getElementById('cartOv').classList.remove('open');
+}
+
+function renderCart() {
+  const el = document.getElementById('cartItemsEl');
+  const foot = document.getElementById('cartFoot');
+  if (!cart.length) {
+    el.innerHTML = '<div class="cartEmpty"><div style="font-size:2.5rem">&#128722;</div><span>Votre panier est vide</span></div>';
+    foot.style.display = 'none';
+    return;
+  }
+  let total = 0;
+  el.innerHTML = cart.map(c => {
+    total += c.price * c.qty;
+    const imgEl = c.photo ? `<img src="${c.photo}" alt="${c.title}" style="width:100%;height:100%;object-fit:cover;border-radius:9px"/>` : `<span style="font-size:1.8rem">${catIcon(c.cat)}</span>`;
+    return `
+    <div class="cartItem">
+      <div class="ciImg">${imgEl}</div>
+      <div class="ciInfo">
+        <div class="ciNm">${esc(c.title)}</div>
+        <div class="ciSell">@${c.seller}</div>
+        <div class="ciPrice">₪${(c.price * c.qty).toLocaleString()}</div>
+        <div class="ciQty">
+          <button class="ciQB" onclick="changeQty('${c.id}',-1)">−</button>
+          <span class="ciQV">${c.qty}</span>
+          <button class="ciQB" onclick="changeQty('${c.id}',1)">+</button>
+        </div>
+      </div>
+      <button class="ciDel" onclick="removeFromCart('${c.id}')" title="Supprimer">&#10005;</button>
+    </div>`;
+  }).join('');
+  document.getElementById('cartTotEl').textContent = '₪' + total.toLocaleString();
+  document.getElementById('cartTitle').textContent = '(' + cart.reduce((s, c) => s + c.qty, 0) + ' articles)';
+  foot.style.display = 'block';
+}
+
+function updateCartBadge() {
+  const n = cart.reduce((s, c) => s + c.qty, 0);
+  document.getElementById('cartN').textContent = n;
+  const mob = document.getElementById('mobileCartN');
+  if (mob) { mob.textContent = n; mob.style.display = n > 0 ? 'flex' : 'none'; }
+}
+
+function clearCart() {
+  cart = []; LS.set('vaben_cart', cart);
+  updateCartBadge();
+}
+
+// ═══════════════════ CHECKOUT ═══════════════════
+// ═══════════════════ STRIPE ═══════════════════
+const STRIPE_PK = 'pk_test_51TOMlFCeETN83xlSeBnWz7kHJuITEcgTBTamdVNkjEPrCYQzdNxLC5QW2r7qK6CFd5JxQHeSYuZc08aPZsLAXPV800YdPxP9z6';
+const SERVER_URL = 'https://vaben-server.onrender.com';
+let stripeInstance = null, stripeCard = null, stripeClientSecret = null;
+
+function initStripe() {
+  if (stripeInstance) return;
+  stripeInstance = Stripe(STRIPE_PK);
+}
+
+function openCheckout() {
+  closeCart();
+  const summary = document.getElementById('ckSummary');
+  let total = 0;
+  summary.innerHTML = cart.map(c => {
+    const sub = c.price * c.qty; total += sub;
+    return `<div class="ckSumItem"><span>${esc(c.title)} x${c.qty}</span><span>₪${sub.toLocaleString()}</span></div>`;
+  }).join('') + `<div class="ckSumItem" style="font-weight:700"><span>Total</span><span>₪${total.toLocaleString()}</span></div>`;
+  document.getElementById('ckTotEl').textContent = '₪' + total.toLocaleString();
+  if (user) document.getElementById('ckEmail').value = user.email || '';
+  document.getElementById('ckStep1').style.display = 'block';
+  document.getElementById('ckStep3').style.display = 'none';
+  document.getElementById('ckStep2').style.display = 'none';
+  document.getElementById('checkoutModal').classList.add('open');
+}
+
+function closeCheckout() { document.getElementById('checkoutModal').classList.remove('open'); }
+
+async function goToStripeStep() {
+  const name = document.getElementById('ckName').value.trim();
+  const email = document.getElementById('ckEmail').value.trim();
+  const addr = document.getElementById('ckAddr').value.trim();
+  if (!name) { toast('Entrez votre nom complet'); return; }
+  if (!email || !email.includes('@')) { toast('Entrez un e-mail valide'); return; }
+  if (!addr) { toast('Entrez votre adresse'); return; }
+
+  document.getElementById('ckStep1').style.display = 'none';
+  document.getElementById('ckStep3').style.display = 'block';
+
+  // Calculer le total en agorot (centimes de shekel)
+  const total = cart.reduce((s, c) => s + c.price * c.qty, 0);
+  const amountAgorot = Math.round(total * 100);
+
+  try {
+    // Créer le PaymentIntent sur le serveur
+    const res = await fetch(SERVER_URL + '/create-payment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: amountAgorot })
+    });
+    const data = await res.json();
+    if (data.error) { toast('Erreur serveur : ' + data.error); return; }
+    stripeClientSecret = data.clientSecret;
+
+    // Monter le champ carte Stripe
+    initStripe();
+    if (stripeCard) stripeCard.destroy();
+    const elements = stripeInstance.elements();
+    stripeCard = elements.create('card', {
+      style: {
+        base: { fontSize: '16px', color: '#0D0D14', fontFamily: 'DM Sans, sans-serif', '::placeholder': { color: '#9999aa' } },
+        invalid: { color: '#E53E3E' }
+      },
+      hidePostalCode: true
+    });
+    stripeCard.mount('#stripe-card-element');
+    stripeCard.on('change', e => {
+      document.getElementById('stripe-errors').textContent = e.error ? e.error.message : '';
+    });
+  } catch (err) {
+    toast('Serveur indisponible. Réessayez dans 30s.');
+    document.getElementById('ckStep1').style.display = 'block';
+    document.getElementById('ckStep3').style.display = 'none';
+  }
+}
+
+async function submitStripePayment() {
+  if (!stripeInstance || !stripeCard || !stripeClientSecret) return;
+  const btn = document.getElementById('stripePayBtn');
+  const label = document.getElementById('stripePayLabel');
+  btn.disabled = true;
+  label.textContent = '⏳ Traitement en cours…';
+
+  const email = document.getElementById('ckEmail').value.trim();
+  const name = document.getElementById('ckName').value.trim();
+
+  const result = await stripeInstance.confirmCardPayment(stripeClientSecret, {
+    payment_method: { card: stripeCard, billing_details: { name, email } }
+  });
+
+  if (result.error) {
+    document.getElementById('stripe-errors').textContent = result.error.message;
+    btn.disabled = false;
+    label.textContent = '🔒 Payer maintenant';
+  } else if (result.paymentIntent.status === 'succeeded') {
+    // Générer un ID de commande unique
+    const orderId = 'VB-' + Date.now();
+    currentOrderId = orderId;
+    // Sauvegarder localement
+    const orderData = {
+      orderId,
+      paymentIntentId: result.paymentIntent.id,
+      amount: result.paymentIntent.amount,
+      email,
+      status: 'paid_escrow',
+      date: new Date().toLocaleString()
+    };
+    const myOrders = LS.get('vaben_orders') || [];
+    myOrders.push(orderData);
+    LS.set('vaben_orders', myOrders);
+    // Afficher confirmation
+    document.getElementById('ckStep3').style.display = 'none';
+    document.getElementById('ckStep2').style.display = 'block';
+    document.getElementById('ckConfEmail').textContent = email;
+    document.getElementById('ckOrderNum').textContent = orderId;
+    btn.disabled = false;
+    label.textContent = '🔒 Payer maintenant';
+  }
+}
+
+let currentOrderId = null;
+
+async function confirmReceived() {
+  if (!currentOrderId) { toast('Aucune commande active'); return; }
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '⏳ Envoi en cours…';
+  try {
+    const res = await fetch(SERVER_URL + '/confirm-received', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId: currentOrderId })
+    });
+    const data = await res.json();
+    if (data.success) {
+      // Mettre à jour le statut local
+      const myOrders = LS.get('vaben_orders') || [];
+      const idx = myOrders.findIndex(o => o.orderId === currentOrderId);
+      if (idx !== -1) { myOrders[idx].status = 'released'; LS.set('vaben_orders', myOrders); }
+      btn.textContent = '✅ Argent envoyé au vendeur !';
+      btn.style.background = '#00B37D';
+      setTimeout(() => { closeCheckout(); clearCart(); currentOrderId = null; }, 2000);
+    } else {
+      btn.disabled = false;
+      btn.textContent = '✅ J\'ai reçu mon colis — Envoyer l\'argent au vendeur';
+      toast('Erreur : ' + (data.error || 'Réessayez'));
+    }
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = '✅ J\'ai reçu mon colis — Envoyer l\'argent au vendeur';
+    toast('Serveur indisponible, réessayez');
+  }
+}
+
+function confirmCheckout() { goToStripeStep(); }
+
+// ═══════════════════ FAVORITES ═══════════════════
+function toggleFav(id, btn) {
+  if (!user) { toast('Connectez-vous pour ajouter aux favoris'); setTimeout(showAuth, 700); return; }
+  const idx = favorites.indexOf(id);
+  if (idx === -1) { favorites.push(id); btn.classList.add('liked'); btn.innerHTML = '&#10084;'; toast('Ajouté aux favoris'); }
+  else { favorites.splice(idx, 1); btn.classList.remove('liked'); btn.innerHTML = '&#9825;'; toast('Retiré des favoris'); }
+  LS.set('vaben_favs', favorites);
+  updateFavBadge();
+}
+
+function updateFavBadge() {
+  const badge = document.getElementById('favCount');
+  const n = favorites.filter(id => articles.find(a => a.id === id)).length;
+  badge.textContent = n;
+  badge.style.display = n > 0 ? 'inline' : 'none';
+}
+
+function showFavs() {
+  // Show/hide
+  document.getElementById('favsPage').style.display = 'block';
+  document.getElementById('prods').scrollIntoView({ behavior: 'smooth' });
+  const grid = document.getElementById('favsGrid');
+  const favArts = articles.filter(a => favorites.includes(a.id));
+  if (!favArts.length) {
+    grid.innerHTML = '<div class="favsEmpty"><div style="font-size:2.5rem">&#9825;</div><p>Aucun favori pour le moment.<br/>Cliquez sur le coeur d\'un article pour le sauvegarder.</p></div>';
+  } else {
+    grid.innerHTML = favArts.map(a => buildProductCard(a)).join('');
+  }
+  document.getElementById('favsPage').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ═══════════════════ CHAT ═══════════════════
+function openChatPanel() {
+  document.getElementById('chatFab').classList.add('hid');
+  document.getElementById('chatPanel').classList.add('open');
+  showTab('c'); renderContacts();
+}
+function closeChatPanel() {
+  document.getElementById('chatFab').classList.remove('hid');
+  document.getElementById('chatPanel').classList.remove('open');
+}
+function startChat(sellerName, initials, avClass) {
+  if (!user) { toast('Connectez-vous pour contacter un vendeur'); setTimeout(showAuth, 700); return; }
+  const cid = (user.uid || 'g') + '_' + sellerName;
+  if (!contacts[cid]) contacts[cid] = { id: cid, name: sellerName, initials, avClass, msgs: [], last: 'Début de conversation' };
+  currentChatId = cid; currentSeller = { name: sellerName, initials, avClass };
+  openChatPanel();
+  setTimeout(() => openConv(cid, sellerName, initials, avClass), 80);
+}
+function openConv(cid, name, initials, avClass) {
+  currentChatId = cid;
+  document.getElementById('cpNm').textContent = name;
+  const av = document.getElementById('cpAv'); av.textContent = initials; av.className = 'cpAv ' + avClass;
+  showTab('m'); renderMsgs();
+}
+function renderMsgs() {
+  const box = document.getElementById('cpMsgs'); box.innerHTML = '';
+  const msgs = (contacts[currentChatId] && contacts[currentChatId].msgs) || [];
+  if (!msgs.length) {
+    const d = document.createElement('div');
+    d.style.cssText = 'text-align:center;color:var(--mid);font-size:.78rem;padding:1.2rem';
+    d.textContent = 'Démarrez la conversation...'; box.appendChild(d);
+  }
+  msgs.forEach(m => {
+    const isMe = m.from === 'me';
+    const d = document.createElement('div'); d.className = 'cm ' + (isMe ? 'cmOut' : 'cmIn');
+    d.innerHTML = esc(m.text) + `<div class="cmTime">${m.time}</div>`;
+    box.appendChild(d);
+  });
+  box.scrollTop = box.scrollHeight;
+}
+function sendMsg() {
+  if (!currentChatId) return;
+  const inp = document.getElementById('chatIn'); const txt = inp.value.trim(); if (!txt) return;
+  const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  contacts[currentChatId].msgs.push({ text: txt, from: 'me', time: now });
+  contacts[currentChatId].last = txt;
+  inp.value = ''; renderMsgs();
+  // Auto-reply
+  setTimeout(() => {
+    const rep = 'Bonjour ! Merci pour votre message, je vous réponds dès que possible. Pour toute urgence : vaben@gmail.com';
+    contacts[currentChatId].msgs.push({ text: rep, from: 'seller', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+    contacts[currentChatId].last = rep; renderMsgs();
+  }, 1100);
+}
+function renderContacts() {
+  const box = document.getElementById('cpContacts');
+  const keys = Object.keys(contacts);
+  if (!keys.length) { box.innerHTML = '<div class="noConv">Aucune conversation.<br/>Contactez un vendeur pour commencer.</div>'; return; }
+  box.innerHTML = keys.map(id => {
+    const c = contacts[id];
+    return `<div class="cItem" onclick="openConv('${id}','${c.name}','${c.initials}','${c.avClass}')"><div class="cIAv ${c.avClass}">${c.initials}</div><div><div class="cINm">${c.name}</div><div class="cILast">${c.last || '...'}</div></div></div>`;
+  }).join('');
+}
+function showTab(t) {
+  document.getElementById('tC').classList.toggle('active', t === 'c');
+  document.getElementById('tM').classList.toggle('active', t === 'm');
+  document.getElementById('cpContacts').style.display = t === 'c' ? 'block' : 'none';
+  document.getElementById('cpConv').style.display = t === 'm' ? 'block' : 'none';
+}
+
+// ═══════════════════ SETTINGS ═══════════════════
+function toggleSett() { document.getElementById('settPanel').classList.toggle('open'); document.getElementById('settOv').classList.toggle('open'); }
+function toggleDrop() { document.getElementById('uDrop').classList.toggle('open'); }
+function closeDrop() { document.getElementById('uDrop').classList.remove('open'); }
+document.addEventListener('click', e => { if (!e.target.closest('#uWrap')) closeDrop(); });
+function cL(l, btn) { lang = l; document.querySelectorAll('.lmb').forEach(b => b.classList.remove('a')); btn.classList.add('a'); toast('Langue mise à jour'); }
+
+// ═══════════════════ UTILS ═══════════════════
+function toast(msg) {
+  const t = document.getElementById('toast'); document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2600);
+}
+function esc(str) { return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function hashCode(str) { let h = 0; for (let i = 0; i < str.length; i++) h = Math.imul(31, h) + str.charCodeAt(i) | 0; return h; }
+function initReveal() {
+  const o = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); }), { threshold: .08 });
+  document.querySelectorAll('.rev').forEach(el => o.observe(el));
+}
+// Modal backdrops
+document.getElementById('sellModal').addEventListener('click', e => { if (e.target === document.getElementById('sellModal')) closeSell(); });
+document.getElementById('checkoutModal').addEventListener('click', e => { if (e.target === document.getElementById('checkoutModal')) closeCheckout(); });
+</script>
+
+<!-- ═══════════════════════════════════
+     ADMIN LOGIN MODAL
+═══════════════════════════════════ -->
+<div id="adminLogin" style="display:none;position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,.85);align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:#0d0d0d;border:1.5px solid #333;border-radius:20px;width:100%;max-width:360px;padding:2.4rem 2rem;animation:up .35s ease both;position:relative;">
+    <div style="text-align:center;margin-bottom:1.5rem;">
+      <div style="width:54px;height:54px;background:#1a1a1a;border:1.5px solid #333;border-radius:14px;margin:0 auto .9rem;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">&#128274;</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:#fff;">Mode Administrateur</div>
+      <p style="color:#666;font-size:.8rem;margin-top:.3rem;">Accès strictement réservé</p>
+    </div>
+    <div id="adminErr" style="color:#e53e3e;font-size:.77rem;text-align:center;min-height:1rem;margin-bottom:.5rem;"></div>
+    <!-- Code input — 4 boxes -->
+    <div style="display:flex;gap:.7rem;justify-content:center;margin-bottom:1.5rem;">
+      <input id="ac0" maxlength="1" type="password" oninput="acNext(0)" onkeydown="acBack(event,0)" style="width:52px;height:56px;text-align:center;font-size:1.5rem;font-weight:700;background:#1a1a1a;border:1.5px solid #333;color:#fff;border-radius:10px;outline:none;font-family:'Syne',sans-serif;" />
+      <input id="ac1" maxlength="1" type="password" oninput="acNext(1)" onkeydown="acBack(event,1)" style="width:52px;height:56px;text-align:center;font-size:1.5rem;font-weight:700;background:#1a1a1a;border:1.5px solid #333;color:#fff;border-radius:10px;outline:none;font-family:'Syne',sans-serif;" />
+      <input id="ac2" maxlength="1" type="password" oninput="acNext(2)" onkeydown="acBack(event,2)" style="width:52px;height:56px;text-align:center;font-size:1.5rem;font-weight:700;background:#1a1a1a;border:1.5px solid #333;color:#fff;border-radius:10px;outline:none;font-family:'Syne',sans-serif;" />
+      <input id="ac3" maxlength="1" type="password" oninput="acNext(3)" onkeydown="acBack(event,3)" style="width:52px;height:56px;text-align:center;font-size:1.5rem;font-weight:700;background:#1a1a1a;border:1.5px solid #333;color:#fff;border-radius:10px;outline:none;font-family:'Syne',sans-serif;" />
+    </div>
+    <button onclick="checkAdminCode()" style="width:100%;padding:.84rem;border-radius:12px;border:none;cursor:pointer;background:linear-gradient(135deg,#dc2626,#7c3aed);color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;">Entrer</button>
+    <button onclick="closeAdminLogin()" style="width:100%;padding:.6rem;border-radius:12px;border:none;cursor:pointer;background:transparent;color:#555;font-size:.83rem;margin-top:.6rem;">Annuler</button>
+    <p id="adminLockMsg" style="text-align:center;color:#e53e3e;font-size:.75rem;margin-top:.6rem;display:none;"></p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     ADMIN PANEL (full screen dark)
+═══════════════════════════════════ -->
+<div id="adminPanel" style="display:none;position:fixed;inset:0;z-index:19000;background:#080808;overflow-y:auto;">
+  <!-- Top bar -->
+  <div style="position:sticky;top:0;z-index:100;background:#0d0d0d;border-bottom:1px solid #1f1f1f;padding:0 2rem;height:58px;display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:1rem;">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:#fff;">Vaben</div>
+      <div style="background:#dc2626;color:#fff;padding:.2rem .7rem;border-radius:999px;font-size:.7rem;font-weight:700;letter-spacing:.5px;animation:adminPulse 2s ease-in-out infinite;">MODE ADMIN</div>
+    </div>
+    <div style="display:flex;gap:.7rem;align-items:center;">
+      <span style="color:#555;font-size:.8rem;" id="adminUserLabel"></span>
+      <button onclick="exitAdmin()" style="padding:.4rem 1rem;border-radius:999px;background:#1a1a1a;border:1px solid #333;color:#aaa;font-size:.8rem;cursor:pointer;">Quitter le mode admin</button>
+    </div>
+  </div>
+
+  <style>
+    @keyframes adminPulse{0%,100%{opacity:1;}50%{opacity:.6;}}
+    .adTab{padding:.6rem 1.2rem;border-radius:999px;border:1px solid #2a2a2a;background:transparent;color:#666;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .18s;}
+    .adTab.active,.adTab:hover{background:#1f1f1f;color:#fff;border-color:#333;}
+    .adCard{background:#111;border:1px solid #1f1f1f;border-radius:16px;padding:1.4rem;}
+    .adStatCard{background:#111;border:1px solid #1f1f1f;border-radius:14px;padding:1.2rem 1.4rem;text-align:center;}
+    .adStatNum{font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;color:#fff;}
+    .adStatLbl{font-size:.75rem;color:#555;margin-top:.2rem;}
+    .adTbl{width:100%;border-collapse:collapse;}
+    .adTbl th{text-align:left;font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#444;padding:.6rem .8rem;border-bottom:1px solid #1f1f1f;}
+    .adTbl td{padding:.75rem .8rem;border-bottom:1px solid #151515;font-size:.85rem;color:#ccc;vertical-align:middle;}
+    .adTbl tr:hover td{background:#141414;}
+    .adDelBtn{padding:.3rem .75rem;border-radius:8px;background:#2a0a0a;color:#e53e3e;border:1px solid #3a1010;font-size:.75rem;cursor:pointer;transition:all .15s;}
+    .adDelBtn:hover{background:#e53e3e;color:#fff;}
+    .adBanBtn{padding:.3rem .75rem;border-radius:8px;background:#1a1a00;color:#f6bd00;border:1px solid #2a2a00;font-size:.75rem;cursor:pointer;transition:all .15s;}
+    .adBanBtn:hover{background:#f6bd00;color:#000;}
+    .adFeatBtn{padding:.3rem .75rem;border-radius:8px;background:#001a0a;color:#00b37d;border:1px solid #003a1a;font-size:.75px;cursor:pointer;transition:all .15s;font-size:.75rem;}
+    .adFeatBtn:hover{background:#00b37d;color:#fff;}
+    .adSectionTitle{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:#fff;margin-bottom:1.2rem;}
+    .adBadge{padding:.15rem .55rem;border-radius:999px;font-size:.65rem;font-weight:700;}
+    .adBadgeG{background:#001a0a;color:#00b37d;}
+    .adBadgeR{background:#2a0a0a;color:#e53e3e;}
+    .adBadgeY{background:#1a1500;color:#f6bd00;}
+    .adInput{width:100%;padding:.65rem .9rem;border-radius:9px;border:1px solid #2a2a2a;background:#0d0d0d;color:#fff;font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;}
+    .adInput:focus{border-color:#6b21a8;}
+    .adDangerZone{background:#150505;border:1px solid #3a1010;border-radius:14px;padding:1.4rem;}
+  </style>
+
+  <div style="padding:1.8rem 2rem;">
+    <!-- Tabs -->
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:2rem;">
+      <button class="adTab active" onclick="showAdTab('stats',this)">Tableau de bord</button>
+      <button class="adTab" onclick="showAdTab('articles',this)">Articles</button>
+      <button class="adTab" onclick="showAdTab('users',this)">Utilisateurs</button>
+      <button class="adTab" onclick="showAdTab('orders',this)">Commandes</button>
+      <button class="adTab" onclick="showAdTab('danger',this)" style="color:#e53e3e;border-color:#3a1010;">Zone dangereuse</button>
+    </div>
+
+    <!-- ── STATS ── -->
+    <div id="adStats">
+      <div class="adSectionTitle">Tableau de bord</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem;margin-bottom:2rem;">
+        <div class="adStatCard"><div class="adStatNum" id="adNArticles">0</div><div class="adStatLbl">Articles publiés</div></div>
+        <div class="adStatCard"><div class="adStatNum" id="adNUsers">0</div><div class="adStatLbl">Comptes</div></div>
+        <div class="adStatCard"><div class="adStatNum" id="adNOrders">0</div><div class="adStatLbl">Commandes</div></div>
+        <div class="adStatCard"><div class="adStatNum" id="adNBanned">0</div><div class="adStatLbl">Bannis</div></div>
+        <div class="adStatCard"><div class="adStatNum" id="adNFeatured">0</div><div class="adStatLbl">En vedette</div></div>
+        <div class="adStatCard"><div class="adStatNum" id="adRevenue">₪0</div><div class="adStatLbl">Chiffre d'affaires</div></div>
+      </div>
+      <div class="adCard">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;color:#fff;font-size:.9rem;margin-bottom:.8rem;">Derniers articles publiés</div>
+        <div id="adRecentArticles" style="color:#555;font-size:.82rem;">Aucun article.</div>
+      </div>
+    </div>
+
+    <!-- ── ARTICLES ── -->
+    <div id="adArticles" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:.8rem;">
+        <div class="adSectionTitle" style="margin:0">Gestion des articles</div>
+        <div style="display:flex;gap:.6rem;">
+          <input class="adInput" type="text" id="adSearchArt" placeholder="Rechercher..." style="width:200px;" oninput="renderAdminArticles()"/>
+          <button onclick="deleteAllArticles()" class="adDelBtn">Tout supprimer</button>
+        </div>
+      </div>
+      <div class="adCard" style="overflow-x:auto;">
+        <table class="adTbl" id="adArtTable">
+          <thead><tr><th>Photo</th><th>Titre</th><th>Vendeur</th><th>Catégorie</th><th>Prix</th><th>Etat</th><th>Actions</th></tr></thead>
+          <tbody id="adArtBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── USERS ── -->
+    <div id="adUsers" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:.8rem;">
+        <div class="adSectionTitle" style="margin:0">Gestion des utilisateurs</div>
+        <input class="adInput" type="text" id="adSearchUser" placeholder="Rechercher..." style="width:200px;" oninput="renderAdminUsers()"/>
+      </div>
+      <div class="adCard" style="overflow-x:auto;">
+        <table class="adTbl">
+          <thead><tr><th>Nom</th><th>E-mail</th><th>Méthode</th><th>Articles</th><th>Statut</th><th>Actions</th></tr></thead>
+          <tbody id="adUserBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── ORDERS ── -->
+    <div id="adOrders" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:.8rem;">
+        <div class="adSectionTitle" style="margin:0">Historique des commandes</div>
+        <button onclick="clearAllOrders()" class="adDelBtn">Effacer tout</button>
+      </div>
+      <div class="adCard" style="overflow-x:auto;">
+        <table class="adTbl">
+          <thead><tr><th>Date</th><th>Client</th><th>E-mail</th><th>Articles</th><th>Total</th><th>Paiement</th></tr></thead>
+          <tbody id="adOrderBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── DANGER ZONE ── -->
+    <div id="adDanger" style="display:none;">
+      <div class="adSectionTitle">Zone dangereuse</div>
+      <div style="display:grid;gap:1rem;max-width:600px;">
+        <div class="adDangerZone">
+          <div style="color:#e53e3e;font-family:'Syne',sans-serif;font-weight:700;margin-bottom:.5rem;">Supprimer tous les articles</div>
+          <p style="color:#666;font-size:.82rem;margin-bottom:.9rem;">Efface définitivement tous les articles publiés sur la plateforme.</p>
+          <button class="adDelBtn" onclick="deleteAllArticles()" style="padding:.5rem 1.2rem;">Supprimer tous les articles</button>
+        </div>
+        <div class="adDangerZone">
+          <div style="color:#e53e3e;font-family:'Syne',sans-serif;font-weight:700;margin-bottom:.5rem;">Supprimer tous les comptes</div>
+          <p style="color:#666;font-size:.82rem;margin-bottom:.9rem;">Efface tous les comptes utilisateurs enregistrés (hors session actuelle).</p>
+          <button class="adDelBtn" onclick="deleteAllUsers()" style="padding:.5rem 1.2rem;">Supprimer tous les comptes</button>
+        </div>
+        <div class="adDangerZone">
+          <div style="color:#f6bd00;font-family:'Syne',sans-serif;font-weight:700;margin-bottom:.5rem;">Effacer toutes les commandes</div>
+          <p style="color:#666;font-size:.82rem;margin-bottom:.9rem;">Remet à zéro l'historique des commandes.</p>
+          <button class="adBanBtn" onclick="clearAllOrders()" style="padding:.5rem 1.2rem;">Effacer les commandes</button>
+        </div>
+        <div class="adDangerZone">
+          <div style="color:#e53e3e;font-family:'Syne',sans-serif;font-weight:700;margin-bottom:.5rem;">Réinitialisation complète</div>
+          <p style="color:#666;font-size:.82rem;margin-bottom:.9rem;">Efface TOUT : articles, comptes, commandes, favoris, panier. Action irréversible.</p>
+          <button class="adDelBtn" onclick="fullReset()" style="padding:.5rem 1.2rem;background:#3a0a0a;">RÉINITIALISATION TOTALE</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /padding -->
+</div><!-- /adminPanel -->
+
+<script>
+// ═══════════════ ADMIN VARS ═══════════════
+const ADMIN_CODE = '0005';
+let adminAttempts = 0;
+let adminLocked = false;
+let adminLockUntil = 0;
+let isAdmin = false;
+let currentAdTab = 'stats';
+// Track orders (stored in LS)
+let orders = LS.get('vaben_orders') || [];
+let bannedUsers = LS.get('vaben_banned') || [];
+
+// ═══════════════ ADMIN LOGIN ═══════════════
+function openAdminLogin() {
+  toggleSett();
+  // Check lockout
+  if (adminLocked && Date.now() < adminLockUntil) {
+    const secs = Math.ceil((adminLockUntil - Date.now()) / 1000);
+    document.getElementById('adminLockMsg').textContent = `Bloqué — réessayez dans ${secs}s`;
+    document.getElementById('adminLockMsg').style.display = 'block';
+    document.getElementById('adminLogin').style.display = 'flex';
+    [0,1,2,3].forEach(i => { document.getElementById('ac'+i).disabled = true; });
+    return;
+  }
+  adminLocked = false;
+  document.getElementById('adminErr').textContent = '';
+  document.getElementById('adminLockMsg').style.display = 'none';
+  [0,1,2,3].forEach(i => { const el = document.getElementById('ac'+i); el.value = ''; el.disabled = false; el.style.borderColor = '#333'; });
+  document.getElementById('adminLogin').style.display = 'flex';
+  setTimeout(() => document.getElementById('ac0').focus(), 100);
+}
+
+function closeAdminLogin() {
+  document.getElementById('adminLogin').style.display = 'none';
+  [0,1,2,3].forEach(i => document.getElementById('ac'+i).value = '');
+}
+
+function acNext(idx) {
+  const val = document.getElementById('ac'+idx).value;
+  if (val && idx < 3) {
+    document.getElementById('ac'+(idx+1)).focus();
+  }
+  if (idx === 3 && val) checkAdminCode();
+}
+
+function acBack(e, idx) {
+  if (e.key === 'Backspace' && !document.getElementById('ac'+idx).value && idx > 0) {
+    document.getElementById('ac'+(idx-1)).focus();
+  }
+}
+
+function checkAdminCode() {
+  if (adminLocked && Date.now() < adminLockUntil) return;
+  const entered = [0,1,2,3].map(i => document.getElementById('ac'+i).value).join('');
+  if (entered === ADMIN_CODE) {
+    adminAttempts = 0;
+    isAdmin = true;
+    closeAdminLogin();
+    openAdminPanel();
+  } else {
+    adminAttempts++;
+    [0,1,2,3].forEach(i => {
+      const el = document.getElementById('ac'+i);
+      el.style.borderColor = '#e53e3e';
+      setTimeout(() => { el.style.borderColor = '#333'; el.value = ''; }, 500);
+    });
+    if (adminAttempts >= 3) {
+      adminLocked = true;
+      adminLockUntil = Date.now() + 5 * 60 * 1000; // 5 min
+      document.getElementById('adminErr').textContent = 'Trop de tentatives — bloqué 5 minutes.';
+      document.getElementById('adminLockMsg').textContent = 'Accès bloqué pendant 5 minutes.';
+      document.getElementById('adminLockMsg').style.display = 'block';
+      [0,1,2,3].forEach(i => document.getElementById('ac'+i).disabled = true);
+    } else {
+      document.getElementById('adminErr').textContent = `Code incorrect — ${3 - adminAttempts} tentative(s) restante(s)`;
+      setTimeout(() => document.getElementById('ac0').focus(), 520);
+    }
+  }
+}
+
+function openAdminPanel() {
+  document.getElementById('adminPanel').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  document.getElementById('adminUserLabel').textContent = user ? ('Connecté : ' + user.name) : '';
+  refreshAdminData();
+  showAdTab('stats', document.querySelector('.adTab.active'));
+}
+
+function exitAdmin() {
+  if (!confirm('Quitter le mode administrateur ?')) return;
+  isAdmin = false;
+  document.getElementById('adminPanel').style.display = 'none';
+  document.body.style.overflow = '';
+  toast('Mode administrateur quitté');
+}
+
+// ═══════════════ ADMIN TABS ═══════════════
+function showAdTab(tab, btn) {
+  ['stats','articles','users','orders','danger'].forEach(t => {
+    document.getElementById('ad'+t.charAt(0).toUpperCase()+t.slice(1)).style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.adTab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  currentAdTab = tab;
+  if (tab === 'articles') renderAdminArticles();
+  if (tab === 'users') renderAdminUsers();
+  if (tab === 'orders') renderAdminOrders();
+  if (tab === 'stats') refreshAdminStats();
+}
+
+function refreshAdminData() {
+  articles = LS.get('vaben_articles') || [];
+  orders = LS.get('vaben_orders') || [];
+  bannedUsers = LS.get('vaben_banned') || [];
+  refreshAdminStats();
+}
+
+function refreshAdminStats() {
+  const users2 = LS.get('vaben_users') || {};
+  const userList = Object.values(users2);
+  const featured = articles.filter(a => a.featured).length;
+  const revenue = orders.reduce((s, o) => s + (o.total || 0), 0);
+  document.getElementById('adNArticles').textContent = articles.length;
+  document.getElementById('adNUsers').textContent = userList.length;
+  document.getElementById('adNOrders').textContent = orders.length;
+  document.getElementById('adNBanned').textContent = bannedUsers.length;
+  document.getElementById('adNFeatured').textContent = featured;
+  document.getElementById('adRevenue').textContent = '₪' + revenue.toLocaleString();
+  // Recent articles
+  const recent = articles.slice(0, 5);
+  document.getElementById('adRecentArticles').innerHTML = recent.length
+    ? recent.map(a => `<div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid #1a1a1a;"><span style="color:#ccc">${esc(a.title)}</span><span style="color:#00b37d;font-weight:700;font-size:.85rem">₪${a.price.toLocaleString()}</span></div>`).join('')
+    : '<span style="color:#444">Aucun article.</span>';
+}
+
+// ═══════════════ ADMIN ARTICLES ═══════════════
+function renderAdminArticles() {
+  const search = (document.getElementById('adSearchArt').value || '').toLowerCase();
+  const filtered = articles.filter(a => !search || a.title.toLowerCase().includes(search) || (a.seller||'').toLowerCase().includes(search));
+  const tbody = document.getElementById('adArtBody');
+  if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#444;padding:2rem">Aucun article</td></tr>`; return; }
+  tbody.innerHTML = filtered.map(a => {
+    const img = a.photos && a.photos.length ? `<img src="${a.photos[0]}" style="width:40px;height:40px;object-fit:cover;border-radius:7px;"/>` : `<div style="width:40px;height:40px;background:#1a1a1a;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">${catIcon(a.cat)}</div>`;
+    const featLabel = a.featured ? `<span class="adBadge adBadgeG">En vedette</span>` : '';
+    return `<tr>
+      <td>${img}</td>
+      <td style="max-width:180px"><div style="color:#fff;font-weight:600">${esc(a.title)}</div>${featLabel}</td>
+      <td style="color:#888">@${esc(a.seller||'?')}</td>
+      <td><span class="adBadge adBadgeY">${a.cat||'?'}</span></td>
+      <td style="color:#00b37d;font-weight:700">₪${a.price.toLocaleString()}</td>
+      <td style="color:#888;font-size:.78rem">${a.condition||''}</td>
+      <td>
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+          <button class="adFeatBtn" onclick="toggleFeatured('${a.id}')">${a.featured ? 'Retirer vedette' : 'Mettre en vedette'}</button>
+          <button class="adDelBtn" onclick="adminDeleteArticle('${a.id}')">Supprimer</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function adminDeleteArticle(id) {
+  if (!confirm('Supprimer cet article définitivement ?')) return;
+  articles = articles.filter(a => a.id !== id);
+  LS.set('vaben_articles', articles);
+  renderAdminArticles();
+  renderProducts(activeCat);
+  refreshAdminStats();
+  toast('Article supprimé');
+}
+
+function toggleFeatured(id) {
+  const art = articles.find(a => a.id === id);
+  if (!art) return;
+  art.featured = !art.featured;
+  LS.set('vaben_articles', articles);
+  renderAdminArticles();
+  renderProducts(activeCat);
+  toast(art.featured ? 'Article mis en vedette' : 'Article retiré de la vedette');
+}
+
+function deleteAllArticles() {
+  if (!confirm('ATTENTION — Supprimer TOUS les articles ? Cette action est irréversible.')) return;
+  articles = [];
+  LS.set('vaben_articles', articles);
+  renderAdminArticles();
+  renderProducts(activeCat);
+  refreshAdminStats();
+  toast('Tous les articles ont été supprimés');
+}
+
+// ═══════════════ ADMIN USERS ═══════════════
+function renderAdminUsers() {
+  const search = (document.getElementById('adSearchUser').value || '').toLowerCase();
+  const usersObj = LS.get('vaben_users') || {};
+  let userList = Object.values(usersObj);
+  if (search) userList = userList.filter(u => u.name.toLowerCase().includes(search) || (u.email||'').toLowerCase().includes(search));
+  const tbody = document.getElementById('adUserBody');
+  if (!userList.length) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#444;padding:2rem">Aucun utilisateur enregistré</td></tr>`; return; }
+  tbody.innerHTML = userList.map(u => {
+    const isBanned = bannedUsers.includes(u.uid);
+    const artCount = articles.filter(a => a.sellerId === u.uid).length;
+    const statusBadge = isBanned
+      ? `<span class="adBadge adBadgeR">Banni</span>`
+      : `<span class="adBadge adBadgeG">Actif</span>`;
+    return `<tr>
+      <td style="color:#fff;font-weight:600">${esc(u.name)}</td>
+      <td style="color:#888">${esc(u.email||'')}</td>
+      <td><span class="adBadge adBadgeY">${u.method||'email'}</span></td>
+      <td style="color:#ccc">${artCount}</td>
+      <td>${statusBadge}</td>
+      <td>
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+          <button class="adBanBtn" onclick="toggleBan('${u.uid}')">${isBanned ? 'Débannir' : 'Bannir'}</button>
+          <button class="adDelBtn" onclick="deleteUser('${u.email}','${u.uid}')">Supprimer</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleBan(uid) {
+  const idx = bannedUsers.indexOf(uid);
+  if (idx === -1) {
+    bannedUsers.push(uid);
+    toast('Utilisateur banni');
+  } else {
+    bannedUsers.splice(idx, 1);
+    toast('Utilisateur débanni');
+  }
+  LS.set('vaben_banned', bannedUsers);
+  renderAdminUsers();
+  refreshAdminStats();
+}
+
+function deleteUser(email, uid) {
+  if (!confirm('Supprimer définitivement ce compte ?')) return;
+  const users2 = LS.get('vaben_users') || {};
+  delete users2[email];
+  LS.set('vaben_users', users2);
+  bannedUsers = bannedUsers.filter(b => b !== uid);
+  LS.set('vaben_banned', bannedUsers);
+  renderAdminUsers();
+  refreshAdminStats();
+  toast('Compte supprimé');
+}
+
+function deleteAllUsers() {
+  if (!confirm('Supprimer TOUS les comptes ? Cette action est irréversible.')) return;
+  LS.del('vaben_users');
+  bannedUsers = []; LS.del('vaben_banned');
+  renderAdminUsers();
+  refreshAdminStats();
+  toast('Tous les comptes ont été supprimés');
+}
+
+// ═══════════════ ADMIN ORDERS ═══════════════
+function renderAdminOrders() {
+  const tbody = document.getElementById('adOrderBody');
+  if (!orders.length) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#444;padding:2rem">Aucune commande</td></tr>`; return; }
+  tbody.innerHTML = orders.slice().reverse().map(o => {
+    const date = new Date(o.date).toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    const items = (o.items || []).map(i => esc(i.title) + ' x' + i.qty).join(', ');
+    return `<tr>
+      <td style="color:#888;font-size:.78rem">${date}</td>
+      <td style="color:#fff">${esc(o.name||'')}</td>
+      <td style="color:#888">${esc(o.email||'')}</td>
+      <td style="color:#ccc;font-size:.78rem;max-width:160px">${items}</td>
+      <td style="color:#00b37d;font-weight:700">₪${(o.total||0).toLocaleString()}</td>
+      <td style="color:#888;font-size:.78rem">${esc(o.payment||'')}</td>
+    </tr>`;
+  }).join('');
+}
+
+function clearAllOrders() {
+  if (!confirm('Effacer tout l\'historique des commandes ?')) return;
+  orders = []; LS.set('vaben_orders', orders);
+  renderAdminOrders();
+  refreshAdminStats();
+  toast('Commandes effacées');
+}
+
+// ═══════════════ FULL RESET ═══════════════
+function fullReset() {
+  const code = prompt('RÉINITIALISATION TOTALE\n\nTapez CONFIRMER pour effacer toutes les données :');
+  if (code !== 'CONFIRMER') { toast('Réinitialisation annulée'); return; }
+  ['vaben_articles','vaben_users','vaben_orders','vaben_banned','vaben_favs','vaben_cart','vaben_session'].forEach(k => LS.del(k));
+  toast('Réinitialisation complète effectuée');
+  setTimeout(() => location.reload(), 1000);
+}
+
+// ═══════════════ PATCH CHECKOUT to save orders ═══════════════
+// Override confirmCheckout to also save order
+const _originalConfirmCheckout = confirmCheckout;
+confirmCheckout = function() {
+  const name  = document.getElementById('ckName').value.trim();
+  const email = document.getElementById('ckEmail').value.trim();
+  const addr  = document.getElementById('ckAddr').value.trim();
+  const pay   = document.getElementById('ckPay').value;
+  if (!name)  { toast('Entrez votre nom complet'); return; }
+  if (!email || !email.includes('@')) { toast('Entrez un e-mail valide'); return; }
+  if (!addr)  { toast('Entrez votre adresse de livraison'); return; }
+  if (!pay)   { toast('Choisissez un mode de paiement'); return; }
+  // Save order
+  const total = cart.reduce((s, c) => s + c.price * c.qty, 0);
+  const order = {
+    id: 'ord_' + Date.now(),
+    date: Date.now(),
+    name, email, addr,
+    payment: pay,
+    items: cart.map(c => ({ title: c.title, qty: c.qty, price: c.price })),
+    total
+  };
+  orders = LS.get('vaben_orders') || [];
+  orders.push(order);
+  LS.set('vaben_orders', orders);
+  // Show confirmation
+  document.getElementById('ckStep1').style.display = 'none';
+  document.getElementById('ckStep2').style.display = 'block';
+  document.getElementById('ckConfEmail').textContent = email;
+};
+
+// ═══════════════ CHECK BAN on login ═══════════════
+const _origLoginUser = loginUser;
+loginUser = function(u) {
+  const banned = LS.get('vaben_banned') || [];
+  if (banned.includes(u.uid)) {
+    document.getElementById('awErr').textContent = 'Ce compte a été banni de la plateforme. Contact : vaben@gmail.com';
+    return;
+  }
+  _origLoginUser(u);
+};
+</script>
+</body>
+</html>
